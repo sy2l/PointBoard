@@ -1,0 +1,14 @@
+{
+  "images" : [
+    {
+      "filename" : "pointboard_icon_v1_variation2_ULTIM.jpg",
+      "idiom" : "universal",
+      "platform" : "ios",
+      "size" : "1024x1024"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

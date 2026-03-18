@@ -208,7 +208,7 @@ struct ResultsView: View {
                     .cornerRadius(12)
             }
 
-            if !storeManager.isProUser && !ProTrialManager.shared.isTrialActive {
+            if !storeManager.hasAllPacksBundle {
                 Button {
                     showStatsAdAlert = true
                 } label: {
@@ -221,8 +221,8 @@ struct ResultsView: View {
                         .cornerRadius(12)
                 }
                 .alert("Stats avancées", isPresented: $showStatsAdAlert) {
-                    Button("Devenir Pro", role: .none) {
-                        // TODO: ouvrir paywall Pro
+                    Button("Voir le Bundle", role: .none) {
+                        // TODO: ouvrir BundlePaywallView
                     }
                     Button("Regarder une vidéo", role: .none) {
                         AdManager.shared.showRewardedAd { success in

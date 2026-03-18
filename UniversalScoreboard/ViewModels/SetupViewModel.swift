@@ -102,7 +102,7 @@ final class SetupViewModel: ObservableObject {
 
     func addPlayerSlot() {
         // Limite free = 6 joueurs
-        if playerSlots.count >= 6 && !StoreManager.shared.isProUser && !ProTrialManager.shared.isTrialActive {
+        if playerSlots.count >= 6 && !StoreManager.shared.hasAllPacksBundle {
             showingAdOrProAlert = true
             return
         }

@@ -229,7 +229,7 @@ struct SetupView: View {
         }
 
         .sheet(item: $showPackPaywall) { pack in
-            PackPaywallView(pack: pack)
+            PackUnlockSheet(pack: pack)
         }
 
         .sheet(

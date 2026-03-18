@@ -1,0 +1,200 @@
+{
+  "identifier" : "1A2B3C4D",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "6670001234",
+      "localizations" : [
+        {
+          "description" : "Débloque tous les packs de jeux actuels et futurs sans publicité.",
+          "displayName" : "Bundle All Packs",
+          "locale" : "fr_FR"
+        },
+        {
+          "description" : "Unlock all current and future game packs without ads.",
+          "displayName" : "Bundle All Packs",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.universalscoreboard.bundle.allpacks",
+      "referenceName" : "Bundle All Packs",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001235",
+      "localizations" : [
+        {
+          "description" : "Débloque Skyjo, 6 qui prend, Jungle Speed et plus.",
+          "displayName" : "Pack Cartes Classiques",
+          "locale" : "fr_FR"
+        },
+        {
+          "description" : "Unlock Skyjo, 6 qui prend, Jungle Speed and more.",
+          "displayName" : "Classic Cards Pack",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.classicCards",
+      "referenceName" : "Pack Classic Cards",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001236",
+      "localizations" : [
+        {
+          "description" : "Débloque des jeux de cartes et dés amusants.",
+          "displayName" : "Pack Cartes & Dés Fun",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.funCardsDice",
+      "referenceName" : "Pack Fun Cards Dice",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001237",
+      "localizations" : [
+        {
+          "description" : "Débloque des jeux de plateau familiaux.",
+          "displayName" : "Pack Société & Famille",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.boardFamily",
+      "referenceName" : "Pack Board Family",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001238",
+      "localizations" : [
+        {
+          "description" : "Débloque des jeux d'extérieur et de sport.",
+          "displayName" : "Pack Extérieur & Sport",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.outdoorSport",
+      "referenceName" : "Pack Outdoor Sport",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001239",
+      "localizations" : [
+        {
+          "description" : "Débloque des jeux de soirée entre amis.",
+          "displayName" : "Pack Party Night",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.partyNight",
+      "referenceName" : "Pack Party Night",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001240",
+      "localizations" : [
+        {
+          "description" : "Débloque des jeux de duels et stratégie.",
+          "displayName" : "Pack Duels & Stratégie",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.duelsStrategy",
+      "referenceName" : "Pack Duels Strategy",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "0.99",
+      "familyShareable" : false,
+      "internalID" : "6670001241",
+      "localizations" : [
+        {
+          "description" : "Débloque des jeux pour enfants et famille.",
+          "displayName" : "Pack Kids & Famille 2",
+          "locale" : "fr_FR"
+        }
+      ],
+      "productID" : "com.universalscoreboard.pack.kidsFamily2",
+      "referenceName" : "Pack Kids Family 2",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6670000000",
+    "_developerTeamID" : "YOURTEAMID",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 743961600.0,
+    "_locale" : "fr_FR",
+    "_storefront" : "FRA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

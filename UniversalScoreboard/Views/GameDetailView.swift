@@ -71,7 +71,7 @@ struct GameDetailView: View {
                 Label("Partager", systemImage: "square.and.arrow.up")
             }
 
-            if storeManager.isProUser {
+            if storeManager.hasAllPacksBundle {
                 Button(action: {
                     ShareManager.shared.exportCSV(result: result)
                 }) {

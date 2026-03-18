@@ -164,9 +164,8 @@ final class GameViewModel: ObservableObject {
 
         // MARK: - Ads gating (every 5 turns)
         if turnCount % 5 == 0 {
-            let isProUser = StoreManager.shared.isProUser
-            let isTrialActive = ProTrialManager.shared.isTrialActive
-            if !isProUser && !isTrialActive {
+            let hasBundle = StoreManager.shared.hasAllPacksBundle
+            if !hasBundle {
                 AdManager.shared.showInterstitialAd()
             }
         }
@@ -225,8 +224,7 @@ final class GameViewModel: ObservableObject {
         // Update profiles stats
         updateProfileStats(for: currentGame)
 
-        // Pro trial progression
-        ProTrialManager.shared.incrementGamesPlayedCount()
+        // Pas besoin de Pro trial progression (ancien système supprimé)
 
         do {
             try persistence.saveGame(currentGame)

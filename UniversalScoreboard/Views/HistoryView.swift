@@ -32,7 +32,7 @@ struct HistoryView: View {
             }
             
             // Bannière publicitaire native (uniquement pour utilisateurs gratuits)
-            if !StoreManager.shared.isProUser && !ProTrialManager.shared.isTrialActive {
+            if !StoreManager.shared.hasAllPacksBundle {
                 /*AdBannerView()
                     .frame(height: 50)*/
             }
@@ -45,7 +45,7 @@ struct HistoryView: View {
             loadHistory()
         }
         .sheet(isPresented: $showPaywall) {
-            PaywallView()
+            BundlePaywallView()
         }
     }
     
@@ -83,14 +83,14 @@ struct HistoryView: View {
     private var historyCardsView: some View {
         ScrollView {
             VStack(spacing: Spacing.lg) {
-                // Badge Pro (si Pro)
-                if storeManager.isProUser {
+                // Badge Bundle (si Bundle)
+                if storeManager.hasAllPacksBundle {
                     ProBadgeCard()
                         .padding(.horizontal, Spacing.lg)
                 }
                 
-                // CTA Pro (si limite atteinte et pas Pro)
-                if HistoryManager.shared.isLimitReached() && !storeManager.isProUser {
+                // CTA Bundle (si limite atteinte et pas Bundle)
+                if HistoryManager.shared.isLimitReached() && !storeManager.hasAllPacksBundle {
                     ProCallToActionCard(onUpgrade: { showPaywall = true })
                         .padding(.horizontal, Spacing.lg)
                 }
@@ -122,7 +122,7 @@ struct HistoryView: View {
     }
 }
 
-// MARK: - Pro Badge Card
+// MARK: - Bundle Badge Card
 struct ProBadgeCard: View {
     var body: some View {
         HStack(spacing: Spacing.md) {
@@ -131,7 +131,7 @@ struct ProBadgeCard: View {
                 .font(.title2)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Version Pro activée")
+                Text("Bundle All Packs activé")
                     .font(.headline)
                     .foregroundColor(.textPrimary)
                 
@@ -152,7 +152,7 @@ struct ProBadgeCard: View {
     }
 }
 
-// MARK: - Pro CTA Card
+// MARK: - Bundle CTA Card
 struct ProCallToActionCard: View {
     let onUpgrade: () -> Void
     
@@ -168,14 +168,14 @@ struct ProCallToActionCard: View {
                     .foregroundColor(.textPrimary)
             }
             
-            Text("Vous êtes limité aux 10 dernières parties. Passez Pro pour conserver tout votre historique.")
+            Text("Vous êtes limité aux 10 dernières parties. Prenez le Bundle All Packs pour conserver tout votre historique.")
                 .font(.subheadline)
                 .foregroundColor(.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             
             Button(action: onUpgrade) {
                 HStack {
-                    Text("Passer Pro")
+                    Text("Voir le Bundle")
                         .fontWeight(.semibold)
                     Image(systemName: "arrow.right")
                 }

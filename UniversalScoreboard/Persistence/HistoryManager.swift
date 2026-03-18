@@ -31,8 +31,8 @@ class HistoryManager {
     /// Vérifie si l'utilisateur peut sauvegarder une partie
     @MainActor
     func canSaveGame() -> Bool {
-        // Si Pro ou essai actif, pas de limite
-        if StoreManager.shared.isProUser || ProTrialManager.shared.isTrialActive {
+        // Si Bundle acheté, pas de limite
+        if StoreManager.shared.hasAllPacksBundle {
             return true
         }
         // Limite de 10 parties pour utilisateurs gratuits
@@ -114,16 +114,16 @@ class HistoryManager {
     /// Vérifie si la limite freemium est atteinte
     @MainActor
     func isLimitReached() -> Bool {
-        let isPro = StoreManager.shared.isProUser
-        return !isPro && loadHistory().count >= freeLimit
+        let hasBundle = StoreManager.shared.hasAllPacksBundle
+        return !hasBundle && loadHistory().count >= freeLimit
     }
     
     /// Vérifie et applique la limite freemium (3 parties max)
     @MainActor
     private func enforceFreemiumLimit() {
-        let isPro = StoreManager.shared.isProUser
+        let hasBundle = StoreManager.shared.hasAllPacksBundle
         
-        if !isPro {
+        if !hasBundle {
             let history = loadHistory()
             
             // Si plus de 10 parties, supprimer les plus anciennes

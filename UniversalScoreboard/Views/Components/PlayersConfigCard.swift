@@ -49,7 +49,7 @@ struct PlayersConfigCard: View {
 
     // MARK: - Computed
     private var maxPlayers: Int {
-        storeManager.isProUser ? 99 : freeHardCapPlayersCount
+        storeManager.hasAllPacksBundle ? 99 : freeHardCapPlayersCount
     }
 
     private var canAddPlayer: Bool {

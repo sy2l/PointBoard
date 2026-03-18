@@ -69,13 +69,13 @@ enum GamePack: String, CaseIterable, Identifiable, Codable {
     var productID: String? {
         switch self {
         case .coreFree:       return nil
-        case .classicCards:   return "com.universalscoreboard.pack.cards.classic"
-        case .funCardsDice:   return "com.universalscoreboard.pack.cards.fun"
-        case .boardFamily:    return "com.universalscoreboard.pack.board"
-        case .outdoorSport:   return "com.universalscoreboard.pack.outdoor"
-        case .partyNight:     return "com.universalscoreboard.pack.party.night"
-        case .duelsStrategy:  return "com.universalscoreboard.pack.duels.strategy"
-        case .kidsFamily2:    return "com.universalscoreboard.pack.kids.family2"
+        case .classicCards:   return "com.universalscoreboard.pack.classicCards"
+        case .funCardsDice:   return "com.universalscoreboard.pack.funCardsDice"
+        case .boardFamily:    return "com.universalscoreboard.pack.boardFamily"
+        case .outdoorSport:   return "com.universalscoreboard.pack.outdoorSport"
+        case .partyNight:     return "com.universalscoreboard.pack.partyNight"
+        case .duelsStrategy:  return "com.universalscoreboard.pack.duelsStrategy"
+        case .kidsFamily2:    return "com.universalscoreboard.pack.kidsFamily2"
         }
     }
 

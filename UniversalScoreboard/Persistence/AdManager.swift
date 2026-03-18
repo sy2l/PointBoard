@@ -3,22 +3,26 @@
 //  PointBoard
 //
 //  Created on 28/01/2026.
+//  Updated on 18/03/2026 — V5.0.0 (Migration Bundle All Packs)
 //  -----------------------------------------------------------------------------
 //  AdManager — Gestion des publicités (AdMob)
 //  -----------------------------------------------------------------------------
 //  ► Rôle
 //    - Centraliser la gestion des publicités (récompensées, interstitielles, bannières)
 //    - Exposer des méthodes pour afficher les publicités
-//    - Vérifier si l'utilisateur est Pro avant d'afficher une pub
+//    - Vérifier si l'utilisateur a acheté le Bundle avant d'afficher une pub
+//    - Incrémenter compteurs de progression (UnlockProgressManager)
 //
 //  ► Types (MVP / Fake):
-//    - Récompensées : Déblocage de fonctionnalités
+//    - Récompensées : Déblocage de fonctionnalités + compteur packs
 //    - Interstitielles : Tous les 5 tours de jeu
 //    - Statique (Gate) : Accès à une action (ex: ajout joueur 7..12)
 //    - Bannières natives : Écrans Historique et Stats (en bas)
 //
-//  Updated on 23/02/2026 — Add Static Gate Ad (for freemium gating)
-//  Updated on 24/02/2026 — Real AdMob (rewarded/interstitial) + fallback Fake
+//  ► Intégration
+//    - Appelé par PackUnlockSheet (showRewardedAd avec forPack)
+//    - Appelle UnlockProgressManager.incrementAdCount(for:) après chaque pub
+//    - Vérifie StoreManager.hasAllPacksBundle (pas de pub si Bundle)
 //  -----------------------------------------------------------------------------
 
 import Foundation
@@ -62,11 +66,11 @@ final class AdManager: ObservableObject {
 
     private init() { }
 
-    // MARK: - Vérification Pro
+    // MARK: - Vérification Bundle
 
     private func canShowAd() -> Bool {
-        // Ne pas afficher de pub si l'utilisateur est Pro ou en essai Pro
-        return !StoreManager.shared.isProUser && !ProTrialManager.shared.isTrialActive
+        // Ne pas afficher de pub si l'utilisateur a acheté le Bundle All Packs
+        return !StoreManager.shared.hasAllPacksBundle
     }
 
     // MARK: - Préchargement (à appeler au launch + après chaque affichage)
@@ -147,7 +151,11 @@ final class AdManager: ObservableObject {
 
     // MARK: - Publicités Récompensées
 
-    func showRewardedAd(completion: @escaping (Bool) -> Void) {
+    /// Affiche une publicité récompensée.
+    /// - Parameters:
+    ///   - forPack: Pack à débloquer (optionnel, pour incrémenter compteur)
+    ///   - completion: Callback appelé avec true si pub vue jusqu'au bout
+    func showRewardedAd(forPack pack: GamePack? = nil, completion: @escaping (Bool) -> Void) {
         guard canShowAd() else {
             completion(true)
             return
@@ -163,7 +171,12 @@ final class AdManager: ObservableObject {
 
                 Task { @MainActor in
                     self.lastAdShownDate = Date()
-                    ProTrialManager.shared.incrementRewardedAdViewCount()
+                    
+                    // Si un pack est fourni, incrémenter le compteur
+                    if let pack = pack {
+                        UnlockProgressManager.shared.incrementAdCount(for: pack)
+                    }
+                    
                     completion(true)
                     self.loadRewarded()
                 }
@@ -177,7 +190,12 @@ final class AdManager: ObservableObject {
             guard let self else { return }
             Task { @MainActor in
                 self.lastAdShownDate = Date()
-                ProTrialManager.shared.incrementRewardedAdViewCount()
+                
+                // Si un pack est fourni, incrémenter le compteur
+                if let pack = pack {
+                    UnlockProgressManager.shared.incrementAdCount(for: pack)
+                }
+                
                 completion(true)
                 self.loadRewarded()
             }
@@ -221,7 +239,7 @@ final class AdManager: ObservableObject {
     // MARK: - Publicités Statique (Gate)
 
     /// Pub "statique" pour autoriser une action (ex: ajout joueur 7..12).
-    /// - Note: En Pro / essai Pro => pas de pub, on exécute direct.
+    /// - Note: Si Bundle acheté => pas de pub, on exécute direct.
     func showStaticGateAd(duration: Int = 15, onComplete: @escaping () -> Void) {
         guard canShowAd() else {
             onComplete()

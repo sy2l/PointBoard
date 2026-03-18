@@ -51,12 +51,8 @@ struct AddPlayerSheet: View {
         guestName.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var isTrialActive: Bool {
-        ProTrialManager.shared.isTrialActive
-    }
-
     private var isProOrTrial: Bool {
-        storeManager.isProUser || isTrialActive
+        storeManager.hasAllPacksBundle
     }
 
     private var canSubmitGuest: Bool {
@@ -77,7 +73,7 @@ struct AddPlayerSheet: View {
     }
 
     private var bannerTitle: String {
-        if isProOrTrial { return "PRO" }
+        if isProOrTrial { return "BUNDLE" }
         return shouldShowAdRequiredBanner ? "PUB" : "FREE"
     }
 

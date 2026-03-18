@@ -24,6 +24,8 @@ struct SettingsView: View {
     @ObservedObject var storeManager = StoreManager.shared
     @State private var showCreateProfile = false
     @State private var showPaywall = false
+    @State private var showPackUnlock = false
+    @State private var selectedPack: GamePack?
 
     var body: some View {
         NavigationStack {
@@ -32,8 +34,8 @@ struct SettingsView: View {
                     // Section Profils
                     profilesSection
 
-                    // Section Pro
-                    proSection
+                    // Section Packs & Bundle
+                    packsSection
 
                     // Section À propos
                     aboutSection
@@ -55,7 +57,10 @@ struct SettingsView: View {
                 CreateProfileSheet()
             }
             .sheet(isPresented: $showPaywall) {
-                PaywallView()
+                BundlePaywallView()
+            }
+            .sheet(item: $selectedPack) { pack in
+                PackUnlockSheet(pack: pack)
             }
         }
     }
@@ -123,19 +128,30 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Pro Section
+    // MARK: - Packs & Bundle Section
 
-    private var proSection: some View {
+    private var packsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Version Pro")
+            Text("Packs & Bundle")
                 .font(.cardTitle)
-                .foregroundColor(Color.textPrimary)// //Color.accentGreen
+                .foregroundColor(.textPrimary)
                 .padding(.horizontal, Spacing.lg)
 
-            ProStatusCard(
-                isPro: storeManager.isProUser,
-                onUpgrade: { showPaywall = true }
-            )
+            // Bundle Card (si pas acheté)
+            if !storeManager.hasAllPacksBundle {
+                BundleCard(onTap: { showPaywall = true })
+                    .padding(.horizontal, Spacing.lg)
+            }
+
+            // Streak Card
+            StreakInfoCard()
+                .padding(.horizontal, Spacing.lg)
+
+            // Liste des packs
+            PacksListView(onTapPack: { pack in
+                selectedPack = pack
+                showPackUnlock = true
+            })
             .padding(.horizontal, Spacing.lg)
         }
     }
@@ -228,6 +244,194 @@ struct CreateProfileSheet: View {
                     .disabled(name.isEmpty)
                 }
             }
+        }
+    }
+}
+
+// MARK: - Bundle Card
+
+struct BundleCard: View {
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: Spacing.md) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 50, height: 50)
+                    
+                    Text("🎁")
+                        .font(.title2)
+                }
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("Bundle All Packs")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    
+                    Text("Tous les packs pour 2,99€")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(Spacing.lg)
+            .background(
+                LinearGradient(
+                    colors: [Color.appPrimary.opacity(0.1), Color.purple.opacity(0.1)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(CornerRadius.md)
+            .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Streak Info Card
+
+struct StreakInfoCard: View {
+    @ObservedObject private var streakManager = DailyStreakManager.shared
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack(spacing: Spacing.md) {
+                Image(systemName: "flame.fill")
+                    .font(.title)
+                    .foregroundColor(.orange)
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("Streak de \(streakManager.currentStreak) jours")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    
+                    if streakManager.jokerAvailable {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                            Text("Joker disponible")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                    } else {
+                        Text("\(streakManager.daysUntilNextJoker()) jours avant le prochain joker")
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                // Indicateur visuel flammes
+                HStack(spacing: 4) {
+                    ForEach(0..<5, id: \.self) { index in
+                        Image(systemName: index < streakManager.currentStreak ? "flame.fill" : "flame")
+                            .foregroundColor(index < streakManager.currentStreak ? .orange : .gray.opacity(0.3))
+                            .font(.caption)
+                    }
+                }
+            }
+        }
+        .padding(Spacing.lg)
+        .background(Color.cardBackground)
+        .cornerRadius(CornerRadius.md)
+        .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Packs List View
+
+struct PacksListView: View {
+    @ObservedObject private var storeManager = StoreManager.shared
+    @ObservedObject private var progressManager = UnlockProgressManager.shared
+    
+    let onTapPack: (GamePack) -> Void
+    
+    var body: some View {
+        VStack(spacing: Spacing.sm) {
+            ForEach(GamePack.allCases.filter { $0 != .coreFree }, id: \.self) { pack in
+                PackRowView(
+                    pack: pack,
+                    isUnlocked: storeManager.isPackUnlocked(pack),
+                    adsProgress: progressManager.adProgressText(for: pack),
+                    onTap: { onTapPack(pack) }
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Pack Row View
+
+struct PackRowView: View {
+    let pack: GamePack
+    let isUnlocked: Bool
+    let adsProgress: String
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: Spacing.md) {
+                Text(packEmoji)
+                    .font(.title2)
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(pack.displayName)
+                        .font(.bodyText.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    
+                    if isUnlocked {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.accentGreen)
+                            Text("Débloqué")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                    } else {
+                        Text(adsProgress)
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                if !isUnlocked {
+                    Image(systemName: "lock.fill")
+                        .foregroundColor(.textSecondary)
+                }
+            }
+            .padding(Spacing.md)
+            .background(Color.cardBackground)
+            .cornerRadius(CornerRadius.md)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private var packEmoji: String {
+        switch pack {
+        case .coreFree: return "⭐️"
+        case .classicCards: return "🃏"
+        case .funCardsDice: return "🎲"
+        case .boardFamily: return "♟️"
+        case .outdoorSport: return "☀️"
+        case .partyNight: return "🎉"
+        case .duelsStrategy: return "🧠"
+        case .kidsFamily2: return "👨‍👩‍👧‍👦"
         }
     }
 }

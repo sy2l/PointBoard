@@ -106,7 +106,7 @@ final class ProfileManager: ObservableObject {
 
     /// Vérifie si l'utilisateur peut ajouter un profil
     func canAddProfile() -> Bool {
-        if StoreManager.shared.isProUser || ProTrialManager.shared.isTrialActive {
+        if StoreManager.shared.hasAllPacksBundle {
             return true
         }
         return profiles.count < 3

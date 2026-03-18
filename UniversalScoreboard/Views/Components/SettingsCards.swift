@@ -142,7 +142,7 @@ struct AboutCard: View {
             Divider()
             
             // Site Internet
-            Link(destination: URL(string: "https://google.fr")!) {
+            Link(destination: URL(string: "http://pb.bmstudio.fr")!) {
                 HStack {
                     Text("Site Internet")
                         .foregroundColor(.textPrimary)

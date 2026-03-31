@@ -450,7 +450,6 @@
 				INFOPLIST_FILE = UniversalScoreboard/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PointBoard;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Nous utilisons les données pour personnaliser les publicités et améliorer votre expérience.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -461,7 +460,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.3.1;
+				MARKETING_VERSION = 5.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sy2l.UniversalScoreboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -491,7 +490,6 @@
 				INFOPLIST_FILE = UniversalScoreboard/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = PointBoard;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "Nous utilisons les données pour personnaliser les publicités et améliorer votre expérience.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -502,7 +500,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.3.1;
+				MARKETING_VERSION = 5.4.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.sy2l.UniversalScoreboard;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

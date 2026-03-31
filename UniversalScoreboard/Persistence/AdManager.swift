@@ -10,19 +10,16 @@
 //  ► Rôle
 //    - Centraliser la gestion des publicités (récompensées, interstitielles, bannières)
 //    - Exposer des méthodes pour afficher les publicités
-//    - Vérifier si l'utilisateur a acheté le Bundle avant d'afficher une pub
-//    - Incrémenter compteurs de progression (UnlockProgressManager)
+//    - Vérifier si l'utilisateur a acheté Premium ou Bundle avant d'afficher une pub
 //
 //  ► Types (MVP / Fake):
-//    - Récompensées : Déblocage de fonctionnalités + compteur packs
+//    - Récompensées : Bonus temporaires (ex: +6 joueurs pour cette partie)
 //    - Interstitielles : Tous les 5 tours de jeu
 //    - Statique (Gate) : Accès à une action (ex: ajout joueur 7..12)
 //    - Bannières natives : Écrans Historique et Stats (en bas)
 //
 //  ► Intégration
-//    - Appelé par PackUnlockSheet (showRewardedAd avec forPack)
-//    - Appelle UnlockProgressManager.incrementAdCount(for:) après chaque pub
-//    - Vérifie StoreManager.hasAllPacksBundle (pas de pub si Bundle)
+//    - Vérifie StoreManager.isPremiumUser (pas de pub si Premium OU Bundle)
 //  -----------------------------------------------------------------------------
 
 import Foundation
@@ -69,8 +66,8 @@ final class AdManager: ObservableObject {
     // MARK: - Vérification Bundle
 
     private func canShowAd() -> Bool {
-        // Ne pas afficher de pub si l'utilisateur a acheté le Bundle All Packs
-        return !StoreManager.shared.hasAllPacksBundle
+        // Ne pas afficher de pub si l'utilisateur a acheté Premium No Ads OU Bundle All Packs
+        return !StoreManager.shared.isPremiumUser
     }
 
     // MARK: - Préchargement (à appeler au launch + après chaque affichage)
@@ -153,9 +150,8 @@ final class AdManager: ObservableObject {
 
     /// Affiche une publicité récompensée.
     /// - Parameters:
-    ///   - forPack: Pack à débloquer (optionnel, pour incrémenter compteur)
     ///   - completion: Callback appelé avec true si pub vue jusqu'au bout
-    func showRewardedAd(forPack pack: GamePack? = nil, completion: @escaping (Bool) -> Void) {
+    func showRewardedAd(completion: @escaping (Bool) -> Void) {
         guard canShowAd() else {
             completion(true)
             return
@@ -171,12 +167,6 @@ final class AdManager: ObservableObject {
 
                 Task { @MainActor in
                     self.lastAdShownDate = Date()
-                    
-                    // Si un pack est fourni, incrémenter le compteur
-                    if let pack = pack {
-                        UnlockProgressManager.shared.incrementAdCount(for: pack)
-                    }
-                    
                     completion(true)
                     self.loadRewarded()
                 }
@@ -190,12 +180,6 @@ final class AdManager: ObservableObject {
             guard let self else { return }
             Task { @MainActor in
                 self.lastAdShownDate = Date()
-                
-                // Si un pack est fourni, incrémenter le compteur
-                if let pack = pack {
-                    UnlockProgressManager.shared.incrementAdCount(for: pack)
-                }
-                
                 completion(true)
                 self.loadRewarded()
             }

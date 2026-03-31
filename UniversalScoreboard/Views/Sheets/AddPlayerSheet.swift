@@ -52,7 +52,7 @@ struct AddPlayerSheet: View {
     }
 
     private var isProOrTrial: Bool {
-        storeManager.hasAllPacksBundle
+        storeManager.isPremiumUser
     }
 
     private var canSubmitGuest: Bool {
@@ -73,13 +73,13 @@ struct AddPlayerSheet: View {
     }
 
     private var bannerTitle: String {
-        if isProOrTrial { return "BUNDLE" }
+        if isProOrTrial { return "PREMIUM" }
         return shouldShowAdRequiredBanner ? "PUB" : "FREE"
     }
 
     private var bannerSubtitle: String {
         if isProOrTrial {
-            return "Ajouts illimités"
+            return "Jusqu'à 12 joueurs"
         }
         if shouldShowAdRequiredBanner {
             return "de 7 à 12 joueurs"

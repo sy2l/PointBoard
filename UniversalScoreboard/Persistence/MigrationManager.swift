@@ -53,11 +53,6 @@ struct MigrationManager {
             defaults.set(true, forKey: "store.hasAllPacksBundle")
             defaults.removeObject(forKey: "store.isProUser")
             
-            // Annuler toutes les notifications (plus besoin si Bundle)
-            Task { @MainActor in
-                NotificationManager.shared.cancelAllNotifications()
-            }
-            
             #if DEBUG
             print("✅ [MigrationManager] Ancien utilisateur Pro → Bundle All Packs")
             #endif

@@ -41,11 +41,13 @@ final class StoreManager: ObservableObject {
     // MARK: - État observable (UI)
 
     @Published private(set) var hasAllPacksBundle: Bool = false
+    @Published private(set) var hasPremiumNoAds: Bool = false
     @Published private(set) var unlockedPacks: Set<GamePack> = []
 
     // MARK: - IDs StoreKit
 
     private let bundleProductID: String = "com.universalscoreboard.bundle.allpacks"
+    private let premiumProductID: String = "com.universalscoreboard.premium.noads"
 
     private init() {
         loadEntitlements()
@@ -63,6 +65,23 @@ final class StoreManager: ObservableObject {
     func isPresetUnlocked(_ presetID: PresetID) -> Bool {
         let pack = GamePack.packContaining(presetID)
         return isPackUnlocked(pack)
+    }
+    
+    // MARK: - Premium Helpers
+    
+    /// Vérifie si l'utilisateur a un accès "premium" (Premium No Ads OU Bundle)
+    var isPremiumUser: Bool {
+        return hasPremiumNoAds || hasAllPacksBundle
+    }
+    
+    /// Vérifie si les publicités doivent être affichées
+    var shouldShowAds: Bool {
+        return !isPremiumUser
+    }
+    
+    /// Nombre maximum de joueurs autorisés
+    var maxPlayersAllowed: Int {
+        return isPremiumUser ? 12 : 6
     }
     
     // MARK: - Déblocage manuel
@@ -118,7 +137,6 @@ final class StoreManager: ObservableObject {
                 await transaction.finish()
                 hasAllPacksBundle = true
                 persistEntitlements()
-                NotificationManager.shared.cancelAllNotifications()
                 
                 #if DEBUG
                 print("✅ [StoreManager] Bundle acheté !")
@@ -131,6 +149,31 @@ final class StoreManager: ObservableObject {
             print("❌ [StoreManager] purchaseBundle error: \(error)")
         }
     }
+    
+    func purchasePremium() async {
+        do {
+            let products = try await Product.products(for: [premiumProductID])
+            guard let product = products.first else { return }
+            let result = try await product.purchase()
+
+            switch result {
+            case .success(let verification):
+                let transaction = try Self.checkVerified(verification)
+                await transaction.finish()
+                hasPremiumNoAds = true
+                persistEntitlements()
+                
+                #if DEBUG
+                print("✅ [StoreManager] Premium No Ads acheté !")
+                #endif
+
+            default:
+                break
+            }
+        } catch {
+            print("❌ [StoreManager] purchasePremium error: \(error)")
+        }
+    }
 
     func restorePurchases() async {
         do {
@@ -140,6 +183,10 @@ final class StoreManager: ObservableObject {
                 if transaction.productID == bundleProductID {
                     hasAllPacksBundle = true
                 }
+                
+                if transaction.productID == premiumProductID {
+                    hasPremiumNoAds = true
+                }
 
                 if let pack = GamePack.allCases.first(where: { $0.productID == transaction.productID }) {
                     unlockedPacks.insert(pack)
@@ -147,10 +194,6 @@ final class StoreManager: ObservableObject {
             }
 
             persistEntitlements()
-            
-            if hasAllPacksBundle {
-                NotificationManager.shared.cancelAllNotifications()
-            }
             
             #if DEBUG
             print("✅ [StoreManager] Achats restaurés")
@@ -165,17 +208,19 @@ final class StoreManager: ObservableObject {
     private func persistEntitlements() {
         let defaults = UserDefaults.standard
         defaults.set(hasAllPacksBundle, forKey: "store.hasAllPacksBundle")
+        defaults.set(hasPremiumNoAds, forKey: "store.hasPremiumNoAds")
         defaults.set(unlockedPacks.map(\.rawValue), forKey: "store.unlockedPacks")
     }
 
     func loadEntitlements() {
         let defaults = UserDefaults.standard
         hasAllPacksBundle = defaults.bool(forKey: "store.hasAllPacksBundle")
+        hasPremiumNoAds = defaults.bool(forKey: "store.hasPremiumNoAds")
         let packIDs = defaults.stringArray(forKey: "store.unlockedPacks") ?? []
         unlockedPacks = Set(packIDs.compactMap { GamePack(rawValue: $0) })
         
         #if DEBUG
-        print("📂 [StoreManager] Chargé : Bundle=\(hasAllPacksBundle), Packs=\(unlockedPacks.count)")
+        print("📂 [StoreManager] Chargé : Bundle=\(hasAllPacksBundle), Premium=\(hasPremiumNoAds), Packs=\(unlockedPacks.count)")
         #endif
     }
 

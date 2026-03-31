@@ -6,10 +6,10 @@
  
  Composants :
  - ProfileSettingsCard : Card pour afficher un profil dans les réglages
- - ProStatusCard : Card pour afficher le statut Pro
  - AboutCard : Card pour les informations à propos
  
  Created on 29/01/2026
+ Updated on 31/03/2026 - Suppression ProStatusCard obsolète (remplacé par PremiumCard/BundleCard)
  */
 
 import SwiftUI
@@ -62,70 +62,6 @@ struct ProfileSettingsCard: View {
     }
 }
 
-// MARK: - ProStatusCard
-struct ProStatusCard: View {
-    let isPro: Bool
-    let onUpgrade: () -> Void
-    
-    var body: some View {
-        HStack(spacing: Spacing.md) {
-            if isPro {
-                // Utilisateur Pro
-                Image(systemName: "crown.fill")
-                    .foregroundColor(.accentGreen)
-                    .font(.title2)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Version Pro activée")
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    Text("Merci pour votre soutien !")
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.accentGreen)
-                    .font(.title2)
-            } else {
-                // Utilisateur gratuit
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("PointBoard Pro")
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    Text("Historique illimité • Statistiques avancées")
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                }
-                
-                Spacer()
-                
-                Button(action: onUpgrade) {
-                    Text("Passer Pro")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(Color.textPrimary)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.accentGreen)
-                        .cornerRadius(CornerRadius.sm)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(Spacing.md)
-        .background(isPro ? Color.accentGreen.opacity(0.1) : Color.cardBackground)
-        .cornerRadius(CornerRadius.md)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
-                .stroke(isPro ? Color.accentGreen.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-        .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
-    }
-}
-
 // MARK: - AboutCard
 struct AboutCard: View {
     var body: some View {
@@ -135,7 +71,7 @@ struct AboutCard: View {
                 Text("Version")
                     .foregroundColor(.textPrimary)
                 Spacer()
-                Text("5.0.1")
+                Text("5.4.1")
                     .foregroundColor(.textSecondary)
             }
             

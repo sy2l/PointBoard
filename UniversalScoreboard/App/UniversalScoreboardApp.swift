@@ -53,26 +53,16 @@ struct UniversalScoreboardApp: App {
                     // ÉTAPE 2 : Reset badge notifications
                     NotificationManager.shared.resetBadge()
                     
-                    // ÉTAPE 3 : Check et update streak
-                    DailyStreakManager.shared.checkAndUpdateStreak()
-                    
-                    // ÉTAPE 4 : Demander permission notifs (si 2e lancement)
+                    // ÉTAPE 3 : Demander permission notifs (si 2e lancement)
                     Task {
                         await requestNotificationPermissionIfNeeded()
                     }
                     
-                    // ÉTAPE 5 : Scheduler notifs quotidiennes (si pas Bundle)
-                    if !StoreManager.shared.hasAllPacksBundle {
-                        NotificationManager.shared.scheduleDailyMysteryNotifications()
-                    }
-                    
-                    // ÉTAPE 6 : Précharger pubs
+                    // ÉTAPE 4 : Précharger pubs
                     AdManager.shared.preloadAds()
                     
                     #if DEBUG
                     print("✅ [App] Managers initialisés")
-                    DailyStreakManager.shared.printStatus()
-                    UnlockProgressManager.shared.printStatus()
                     #endif
                 }
                 .fullScreenCover(isPresented: $adManager.showFakeAd) {

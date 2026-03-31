@@ -59,10 +59,19 @@ struct SplashScreenView: View {
 
     // MARK: - UI
     private var splashContent: some View {
-        Image("Splashscreen")
-            .resizable()
-            .scaledToFill()
+        ZStack {
+            Color.black
+                .ignoresSafeArea()
+            
+            GeometryReader { geometry in
+                Image("Splashscreen")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
+            }
             .ignoresSafeArea()
+        }
     }
 
     // MARK: - Sequence

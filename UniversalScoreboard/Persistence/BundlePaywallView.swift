@@ -3,20 +3,21 @@
 //  PointBoard
 //
 //  Created on 18/03/2026.
+//  Updated on 26/03/2026 — Prix modifié : 2,99€ → 3,99€ (inclut Premium)
 //  -----------------------------------------------------------------------------
-//  BundlePaywallView — Interface d'achat du Bundle All Packs
+//  BundlePaywallView — Interface d'achat du Bundle All Packs + Premium
 //  -----------------------------------------------------------------------------
 //  ► Rôle
-//    - Présenter le Bundle All Packs (2,99€)
+//    - Présenter le Bundle All Packs + Premium No Ads (3,99€)
 //    - Afficher la liste des 7 packs inclus
 //    - Montrer l'économie réalisée vs achats individuels
 //    - Gérer l'achat via StoreKit 2
 //
 //  ► Avantages Bundle
-//    - Prix unique : 2,99€ (vs 7×0,99€ = 6,93€)
-//    - Économie : 3,94€
+//    - Prix unique : 3,99€ (vs 7×0,99€ + 0,99€ Premium = 7,92€)
+//    - Économie : 3,93€
 //    - Inclut tous les packs actuels + futurs
-//    - Plus de publicités ni d'attente
+//    - Aucune publicité + 12 joueurs simultanés
 //
 //  ► Intégration
 //    - Appelé depuis PackUnlockSheet (footer link)
@@ -97,12 +98,12 @@ struct BundlePaywallView: View {
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
             
-            Text("Tous les packs actuels + futurs")
+            Text("Tous les packs actuels + futurs + Premium")
                 .font(.headline)
                 .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)
             
-            Text("2,99€")
+            Text("3,99€")
                 .font(.system(size: 48, weight: .bold))
                 .foregroundColor(.appPrimary)
         }
@@ -164,7 +165,7 @@ struct BundlePaywallView: View {
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                     
-                    Text("7 × 0,99€")
+                    Text("7 packs + Premium")
                         .font(.headline)
                         .foregroundColor(.textPrimary)
                         .strikethrough()
@@ -172,7 +173,7 @@ struct BundlePaywallView: View {
                 
                 Spacer()
                 
-                Text("6,93€")
+                Text("7,92€")
                     .font(.title2.bold())
                     .foregroundColor(.textSecondary)
                     .strikethrough()
@@ -183,18 +184,18 @@ struct BundlePaywallView: View {
             
             HStack {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("Bundle All Packs")
+                    Text("Bundle All Packs + Premium")
                         .font(.caption)
                         .foregroundColor(.appPrimary)
                     
-                    Text("Économie de 3,94€ !")
+                    Text("Économie de 3,93€ !")
                         .font(.headline)
                         .foregroundColor(.appPrimary)
                 }
                 
                 Spacer()
                 
-                Text("2,99€")
+                Text("3,99€")
                     .font(.title.bold())
                     .foregroundColor(.appPrimary)
             }
@@ -230,20 +231,26 @@ struct BundlePaywallView: View {
                 )
                 
                 advantageRow(
-                    icon: "bolt.fill",
-                    title: "Déblocage instantané",
-                    subtitle: "Pas d'attente"
-                )
-                
-                advantageRow(
                     icon: "xmark.circle.fill",
-                    title: "Plus de publicités",
+                    title: "Aucune publicité",
                     subtitle: "Expérience sans interruption"
                 )
                 
                 advantageRow(
+                    icon: "person.3.fill",
+                    title: "Jusqu'à 12 joueurs",
+                    subtitle: "Au lieu de 6 joueurs max"
+                )
+                
+                advantageRow(
+                    icon: "bolt.fill",
+                    title: "Déblocage instantané",
+                    subtitle: "Tout accessible immédiatement"
+                )
+                
+                advantageRow(
                     icon: "star.fill",
-                    title: "Économie de 3,94€",
+                    title: "Économie de 3,93€",
                     subtitle: "vs achats individuels"
                 )
             }
@@ -293,7 +300,7 @@ struct BundlePaywallView: View {
                         Text("Acheter le Bundle")
                             .fontWeight(.bold)
                         Text("•")
-                        Text("2,99€")
+                        Text("3,99€")
                             .fontWeight(.bold)
                     }
                 }

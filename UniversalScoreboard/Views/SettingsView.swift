@@ -24,6 +24,7 @@ struct SettingsView: View {
     @ObservedObject var storeManager = StoreManager.shared
     @State private var showCreateProfile = false
     @State private var showPaywall = false
+    @State private var showPremiumPaywall = false
     @State private var showPackUnlock = false
     @State private var selectedPack: GamePack?
 
@@ -58,6 +59,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showPaywall) {
                 BundlePaywallView()
+            }
+            .sheet(isPresented: $showPremiumPaywall) {
+                PremiumPaywallView()
             }
             .sheet(item: $selectedPack) { pack in
                 PackUnlockSheet(pack: pack)
@@ -137,15 +141,23 @@ struct SettingsView: View {
                 .foregroundColor(.textPrimary)
                 .padding(.horizontal, Spacing.lg)
 
+            // Premium Status (si acheté)
+            if storeManager.isPremiumUser {
+                PremiumStatusCard()
+                    .padding(.horizontal, Spacing.lg)
+            }
+
+            // Premium No Ads Card (si pas acheté)
+            if !storeManager.hasPremiumNoAds && !storeManager.hasAllPacksBundle {
+                PremiumCard(onTap: { showPremiumPaywall = true })
+                    .padding(.horizontal, Spacing.lg)
+            }
+
             // Bundle Card (si pas acheté)
             if !storeManager.hasAllPacksBundle {
                 BundleCard(onTap: { showPaywall = true })
                     .padding(.horizontal, Spacing.lg)
             }
-
-            // Streak Card
-            StreakInfoCard()
-                .padding(.horizontal, Spacing.lg)
 
             // Liste des packs
             PacksListView(onTapPack: { pack in
@@ -248,6 +260,99 @@ struct CreateProfileSheet: View {
     }
 }
 
+// MARK: - Premium Status Card
+
+struct PremiumStatusCard: View {
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [.green, .green.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 50, height: 50)
+                
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title2)
+                    .foregroundColor(.white)
+            }
+            
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Premium activé")
+                    .font(.headline)
+                    .foregroundColor(.textPrimary)
+                
+                Text("Aucune publicité • Jusqu'à 12 joueurs")
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+            
+            Spacer()
+        }
+        .padding(Spacing.lg)
+        .background(Color.accentGreen.opacity(0.1))
+        .cornerRadius(CornerRadius.md)
+        .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Premium Card
+
+struct PremiumCard: View {
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: Spacing.md) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.orange, .red],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 50, height: 50)
+                    
+                    Text("⭐️")
+                        .font(.title2)
+                }
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text("Premium - Sans publicité")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    
+                    Text("Aucune pub + 12 joueurs pour 0,99€")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(Spacing.lg)
+            .background(
+                LinearGradient(
+                    colors: [Color.orange.opacity(0.1), Color.red.opacity(0.1)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(CornerRadius.md)
+            .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
 // MARK: - Bundle Card
 
 struct BundleCard: View {
@@ -276,7 +381,7 @@ struct BundleCard: View {
                         .font(.headline)
                         .foregroundColor(.textPrimary)
                     
-                    Text("Tous les packs pour 2,99€")
+                    Text("Tous les packs + Premium pour 3,99€")
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -301,62 +406,10 @@ struct BundleCard: View {
     }
 }
 
-// MARK: - Streak Info Card
-
-struct StreakInfoCard: View {
-    @ObservedObject private var streakManager = DailyStreakManager.shared
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            HStack(spacing: Spacing.md) {
-                Image(systemName: "flame.fill")
-                    .font(.title)
-                    .foregroundColor(.orange)
-                
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("Streak de \(streakManager.currentStreak) jours")
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    
-                    if streakManager.jokerAvailable {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                            Text("Joker disponible")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                    } else {
-                        Text("\(streakManager.daysUntilNextJoker()) jours avant le prochain joker")
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-                }
-                
-                Spacer()
-                
-                // Indicateur visuel flammes
-                HStack(spacing: 4) {
-                    ForEach(0..<5, id: \.self) { index in
-                        Image(systemName: index < streakManager.currentStreak ? "flame.fill" : "flame")
-                            .foregroundColor(index < streakManager.currentStreak ? .orange : .gray.opacity(0.3))
-                            .font(.caption)
-                    }
-                }
-            }
-        }
-        .padding(Spacing.lg)
-        .background(Color.cardBackground)
-        .cornerRadius(CornerRadius.md)
-        .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
-    }
-}
-
 // MARK: - Packs List View
 
 struct PacksListView: View {
     @ObservedObject private var storeManager = StoreManager.shared
-    @ObservedObject private var progressManager = UnlockProgressManager.shared
     
     let onTapPack: (GamePack) -> Void
     
@@ -366,7 +419,6 @@ struct PacksListView: View {
                 PackRowView(
                     pack: pack,
                     isUnlocked: storeManager.isPackUnlocked(pack),
-                    adsProgress: progressManager.adProgressText(for: pack),
                     onTap: { onTapPack(pack) }
                 )
             }
@@ -379,7 +431,6 @@ struct PacksListView: View {
 struct PackRowView: View {
     let pack: GamePack
     let isUnlocked: Bool
-    let adsProgress: String
     let onTap: () -> Void
     
     var body: some View {
@@ -402,7 +453,7 @@ struct PackRowView: View {
                                 .foregroundColor(.textSecondary)
                         }
                     } else {
-                        Text(adsProgress)
+                        Text("0,99€")
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     }

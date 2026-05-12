@@ -4,6 +4,8 @@
 //
 //  Created on 18/03/2026.
 //  Updated on 26/03/2026 — Supprimé méthodes alternatives (refus Apple)
+//  Updated on 01/04/2026 — Ajout bouton "Restaurer les achats" + Fix iPad tap area
+//  Updated on 08/04/2026 — Ajout indicateurs chargement + alertes erreurs (Option A+C)
 //  -----------------------------------------------------------------------------
 //  PackUnlockSheet — Interface de déblocage d'un pack
 //  -----------------------------------------------------------------------------
@@ -29,6 +31,7 @@ struct PackUnlockSheet: View {
     
     @State private var isPurchasing = false
     @State private var showBundleView = false
+    @State private var showErrorAlert = false
     
     var body: some View {
         NavigationStack {
@@ -37,6 +40,16 @@ struct PackUnlockSheet: View {
                     
                     // HEADER
                     headerView
+                    
+                    // Indicateur de chargement (Option C)
+                    if storeManager.isLoadingProducts {
+                        loadingView
+                    }
+                    
+                    // Message d'erreur si produits non chargés (Option A)
+                    if let error = storeManager.productsLoadError {
+                        errorView(message: error)
+                    }
                     
                     // LISTE JEUX INCLUS
                     includedGamesSection
@@ -62,6 +75,21 @@ struct PackUnlockSheet: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Fermer") { dismiss() }
                 }
+            }
+            .alert("Erreur d'achat", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) {
+                    storeManager.lastPurchaseError = nil
+                }
+                Button("Réessayer") {
+                    Task {
+                        await storeManager.loadProducts()
+                    }
+                }
+            } message: {
+                Text(storeManager.lastPurchaseError ?? "Une erreur est survenue")
+            }
+            .onChange(of: storeManager.lastPurchaseError) { _, error in
+                showErrorAlert = (error != nil)
             }
             .sheet(isPresented: $showBundleView) {
                 BundlePaywallView()
@@ -155,6 +183,7 @@ struct PackUnlockSheet: View {
                 Spacer()
             }
             
+            // Bouton principal achat
             Button(action: {
                 Task {
                     isPurchasing = true
@@ -172,16 +201,82 @@ struct PackUnlockSheet: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
+                .frame(minHeight: 50) // Fix iPad tap area
                 .padding()
                 .background(Color.accentGreen)
                 .foregroundColor(.white)
                 .cornerRadius(CornerRadius.md)
             }
-            .disabled(isPurchasing)
+            .buttonStyle(.plain) // Fix iPad gesture
+            .disabled(isPurchasing || storeManager.isLoadingProducts)
+            
+            // Bouton Restaurer les achats (exigé par Apple)
+            if !storeManager.isPackUnlocked(pack) {
+                Button(action: {
+                    Task {
+                        await storeManager.restorePurchases()
+                    }
+                }) {
+                    Text("Restaurer les achats")
+                        .font(.subheadline)
+                        .foregroundColor(.accentGreen)
+                        .underline()
+                }
+                .buttonStyle(.plain)
+                .padding(.top, Spacing.xs)
+            }
         }
         .padding(Spacing.lg)
         .background(Color.accentGreen.opacity(0.1))
         .cornerRadius(CornerRadius.lg)
+    }
+    
+    // MARK: - Vues de chargement et d'erreur (Option A + C)
+    
+    private var loadingView: some View {
+        VStack(spacing: Spacing.md) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .accentGreen))
+            
+            Text("Chargement des produits...")
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(Color.accentGreen.opacity(0.1))
+        .cornerRadius(CornerRadius.md)
+    }
+    
+    private func errorView(message: String) -> some View {
+        VStack(spacing: Spacing.md) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.largeTitle)
+                .foregroundColor(.red)
+            
+            Text(message)
+                .font(.bodyText)
+                .foregroundColor(.textPrimary)
+                .multilineTextAlignment(.center)
+            
+            Button(action: {
+                Task {
+                    await storeManager.loadProducts()
+                }
+            }) {
+                Text("Réessayer")
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.accentGreen)
+                    .cornerRadius(CornerRadius.sm)
+            }
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(Color.red.opacity(0.1))
+        .cornerRadius(CornerRadius.md)
     }
     
     // MARK: - Footer Bundle

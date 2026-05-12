@@ -3,6 +3,8 @@
 //  PointBoard
 //
 //  Created on 26/03/2026.
+//  Updated on 01/04/2026 — Ajout bouton "Restaurer les achats" + Fix iPad tap area
+//  Updated on 08/04/2026 — Ajout indicateurs chargement + alertes erreurs (Option A+C)
 //  -----------------------------------------------------------------------------
 //  PremiumPaywallView — Interface d'achat Premium No Ads
 //  -----------------------------------------------------------------------------
@@ -32,6 +34,7 @@ struct PremiumPaywallView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var isPurchasing = false
+    @State private var showErrorAlert = false
     
     var body: some View {
         NavigationStack {
@@ -40,6 +43,16 @@ struct PremiumPaywallView: View {
                     
                     // HERO SECTION
                     heroView
+                    
+                    // Indicateur de chargement (Option C)
+                    if storeManager.isLoadingProducts {
+                        loadingView
+                    }
+                    
+                    // Message d'erreur si produits non chargés (Option A)
+                    if let error = storeManager.productsLoadError {
+                        errorView(message: error)
+                    }
                     
                     // AVANTAGES
                     advantagesSection
@@ -61,6 +74,21 @@ struct PremiumPaywallView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Fermer") { dismiss() }
                 }
+            }
+            .alert("Erreur d'achat", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) {
+                    storeManager.lastPurchaseError = nil
+                }
+                Button("Réessayer") {
+                    Task {
+                        await storeManager.loadProducts()
+                    }
+                }
+            } message: {
+                Text(storeManager.lastPurchaseError ?? "Une erreur est survenue")
+            }
+            .onChange(of: storeManager.lastPurchaseError) { _, error in
+                showErrorAlert = (error != nil)
             }
             .onChange(of: storeManager.hasPremiumNoAds) { _, hasPremium in
                 if hasPremium {
@@ -242,6 +270,7 @@ struct PremiumPaywallView: View {
     
     private var purchaseButton: some View {
         VStack(spacing: Spacing.md) {
+            // Bouton principal achat
             Button(action: {
                 Task {
                     isPurchasing = true
@@ -262,6 +291,7 @@ struct PremiumPaywallView: View {
                     }
                 }
                 .frame(maxWidth: .infinity)
+                .frame(minHeight: 50) // Fix iPad tap area
                 .padding()
                 .background(
                     LinearGradient(
@@ -279,7 +309,8 @@ struct PremiumPaywallView: View {
                     y: 4
                 )
             }
-            .disabled(isPurchasing || storeManager.hasPremiumNoAds || storeManager.hasAllPacksBundle)
+            .buttonStyle(.plain) // Fix iPad gesture
+            .disabled(isPurchasing || storeManager.hasPremiumNoAds || storeManager.hasAllPacksBundle || storeManager.isLoadingProducts)
             
             if storeManager.hasPremiumNoAds || storeManager.hasAllPacksBundle {
                 HStack(spacing: Spacing.xs) {
@@ -291,10 +322,74 @@ struct PremiumPaywallView: View {
                 }
             }
             
+            // Bouton Restaurer les achats (exigé par Apple)
+            if !storeManager.hasPremiumNoAds && !storeManager.hasAllPacksBundle {
+                Button(action: {
+                    Task {
+                        await storeManager.restorePurchases()
+                    }
+                }) {
+                    Text("Restaurer les achats")
+                        .font(.subheadline)
+                        .foregroundColor(.orange)
+                        .underline()
+                }
+                .buttonStyle(.plain)
+                .padding(.top, Spacing.sm)
+            }
+            
             Text("Achat unique • Pas d'abonnement")
                 .font(.caption)
                 .foregroundColor(.textSecondary)
         }
+    }
+    
+    // MARK: - Vues de chargement et d'erreur (Option A + C)
+    
+    private var loadingView: some View {
+        VStack(spacing: Spacing.md) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .orange))
+            
+            Text("Chargement des produits...")
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(Color.orange.opacity(0.1))
+        .cornerRadius(CornerRadius.md)
+    }
+    
+    private func errorView(message: String) -> some View {
+        VStack(spacing: Spacing.md) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.largeTitle)
+                .foregroundColor(.red)
+            
+            Text(message)
+                .font(.bodyText)
+                .foregroundColor(.textPrimary)
+                .multilineTextAlignment(.center)
+            
+            Button(action: {
+                Task {
+                    await storeManager.loadProducts()
+                }
+            }) {
+                Text("Réessayer")
+                    .font(.subheadline.bold())
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.orange)
+                    .cornerRadius(CornerRadius.sm)
+            }
+        }
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(Color.red.opacity(0.1))
+        .cornerRadius(CornerRadius.md)
     }
     
     // MARK: - Info Packs

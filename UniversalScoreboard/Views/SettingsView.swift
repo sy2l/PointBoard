@@ -419,7 +419,12 @@ struct PacksListView: View {
                 PackRowView(
                     pack: pack,
                     isUnlocked: storeManager.isPackUnlocked(pack),
-                    onTap: { onTapPack(pack) }
+                    onTap: {
+                        // Ne pas ouvrir le sheet si déjà débloqué
+                        if !storeManager.isPackUnlocked(pack) {
+                            onTapPack(pack)
+                        }
+                    }
                 )
             }
         }

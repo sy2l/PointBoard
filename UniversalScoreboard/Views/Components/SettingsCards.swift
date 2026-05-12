@@ -10,6 +10,8 @@
  
  Created on 29/01/2026
  Updated on 31/03/2026 - Suppression ProStatusCard obsolète (remplacé par PremiumCard/BundleCard)
+ Updated on 01/04/2026 - Version bump 5.4.2 (ajout bouton "Restaurer les achats")
+ Updated on 08/04/2026 - Version bump 5.4.3 (chargement produits + alertes erreurs)
  */
 
 import SwiftUI
@@ -71,7 +73,7 @@ struct AboutCard: View {
                 Text("Version")
                     .foregroundColor(.textPrimary)
                 Spacer()
-                Text("5.4.1")
+                Text("5.4.3")
                     .foregroundColor(.textSecondary)
             }
             

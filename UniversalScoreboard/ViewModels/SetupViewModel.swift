@@ -23,7 +23,6 @@ final class SetupViewModel: ObservableObject {
     @Published var showingRules: Bool = false
     @Published var showingProfileCreation: Bool = false
     @Published var editingSlotId: UUID? = nil
-    @Published var showingAdOrProAlert: Bool = false
 
     // MARK: - Dependencies
     private let profileManager: ProfileManager
@@ -101,25 +100,11 @@ final class SetupViewModel: ObservableObject {
     }
 
     func addPlayerSlot() {
-        // Limite free = 6 joueurs
-        if playerSlots.count >= 6 && !StoreManager.shared.hasAllPacksBundle {
-            showingAdOrProAlert = true
+        // Limite 12 joueurs (gratuit)
+        if playerSlots.count >= 12 {
             return
         }
         playerSlots.append(PlayerSlot(name: ""))
-    }
-
-    func addPlayerSlotAfterAd() {
-        // IMPORTANT Swift 6:
-        // le callback peut être nonisolated -> on rebascule explicitement sur MainActor.
-        AdManager.shared.showRewardedAd { [weak self] success in
-            guard success else { return }
-            guard let self else { return }
-
-            Task { @MainActor in
-                self.playerSlots.append(PlayerSlot(name: ""))
-            }
-        }
     }
 
     func removePlayerSlot(at index: Int) {

@@ -33,7 +33,6 @@ struct SetupView: View {
     // MARK: - Dependencies
     @StateObject private var gameViewModel = GameViewModel()
     @ObservedObject private var profileManager = ProfileManager.shared
-    @ObservedObject private var storeManager = StoreManager.shared
 
     // MARK: - State (Game selection)
     @State private var selectedPresetID: PresetID = .generic
@@ -55,7 +54,6 @@ struct SetupView: View {
     @State private var showGameView: Bool = false
     @State private var showGameSelection: Bool = false
     @State private var showRules: Bool = false
-    @State private var showPackPaywall: GamePack? = nil
 
     // Snapshot : PresetID figé au moment du tap sur "Voir les règles"
     @State private var rulesPresetID: PresetID? = nil
@@ -228,10 +226,6 @@ struct SetupView: View {
             if !isPresented { rulesPresetID = nil }
         }
 
-        .sheet(item: $showPackPaywall) { pack in
-            PackUnlockSheet(pack: pack)
-        }
-
         .sheet(
             isPresented: $showCreateProfileSheet,
             onDismiss: {
@@ -259,12 +253,7 @@ struct SetupView: View {
     // MARK: - Helpers
 
     private func handlePresetSelection(_ presetId: PresetID) {
-        if !storeManager.isPresetUnlocked(presetId) {
-            let pack = GamePack.packContaining(presetId)
-            showPackPaywall = pack
-            return
-        }
-
+        // Tous les presets sont maintenant accessibles (app gratuite)
         selectedPresetID = presetId
         applyPresetToUI(presetId)
     }

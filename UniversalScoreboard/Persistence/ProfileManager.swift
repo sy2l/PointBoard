@@ -104,15 +104,7 @@ final class ProfileManager: ObservableObject {
 
     // MARK: - Create
 
-    /// Vérifie si l'utilisateur peut ajouter un profil
-    func canAddProfile() -> Bool {
-        if StoreManager.shared.hasAllPacksBundle {
-            return true
-        }
-        return profiles.count < 3
-    }
-
-    /// Crée un nouveau profil
+    /// Crée un nouveau profil (profils illimités, app gratuite)
     func createProfile(name: String, avatar: String = "person.circle.fill") -> PlayerProfile {
         let profile = PlayerProfile(name: name, avatar: avatar)
         profiles.append(profile)
@@ -122,30 +114,6 @@ final class ProfileManager: ObservableObject {
         selectProfile(profile)
 
         return profile
-    }
-
-    /// Crée un nouveau profil après avoir vu une pub
-    func createProfileAfterAd(
-        name: String,
-        avatar: String = "person.circle.fill",
-        completion: @escaping (PlayerProfile?) -> Void
-    ) {
-        AdManager.shared.showRewardedAd { [weak self] success in
-            guard let self else {
-                completion(nil)
-                return
-            }
-
-            // ⚠️ callback pub peut arriver hors MainActor -> on repasse explicitement sur MainActor
-            Task { @MainActor in
-                if success {
-                    let profile = self.createProfile(name: name, avatar: avatar)
-                    completion(profile)
-                } else {
-                    completion(nil)
-                }
-            }
-        }
     }
 
     // MARK: - Read

@@ -162,14 +162,6 @@ final class GameViewModel: ObservableObject {
         // MARK: - Turn counter
         turnCount += 1
 
-        // MARK: - Ads gating (every 5 turns)
-        if turnCount % 5 == 0 {
-            let hasBundle = StoreManager.shared.hasAllPacksBundle
-            if !hasBundle {
-                AdManager.shared.showInterstitialAd()
-            }
-        }
-
         // MARK: - Persist current game
         do {
             try persistence.saveGame(updatedGame)

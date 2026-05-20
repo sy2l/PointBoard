@@ -4,12 +4,12 @@
  *
  * Created by sy2l on 06/01/2026.
  * Updated by ChatGPT on 21/01/2026 — V4.6.0 (sheet dédiée + gating)
+ * Updated by sy2l on 12/05/2026 — Migration V6.0.0 : Tous les presets gratuits
  * -----------------------------------------------------------------------------
  * GameSelectionSheet — Sélecteur de jeu (PresetID)
  * -----------------------------------------------------------------------------
- * - Affiche tous les PresetID
- * - Montre le verrou 🔒 si le preset n'est pas débloqué
- * - Affiche l'info pack (nom + prix) pour contextualiser la monétisation
+ * - Affiche tous les PresetID (tous accessibles)
+ * - Pas de verrou (app 100% gratuite)
  * -----------------------------------------------------------------------------
  */
 
@@ -17,7 +17,6 @@ import SwiftUI
 
 struct GameSelectionSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var storeManager = StoreManager.shared
 
     @Binding var selectedPresetID: PresetID
     let onSelect: (PresetID) -> Void
@@ -25,20 +24,7 @@ struct GameSelectionSheet: View {
     // MARK: - Sorting
     private var sortedPresets: [PresetID] {
         PresetID.allCases.sorted { a, b in
-            let packA = GamePack.packContaining(a)
-            let packB = GamePack.packContaining(b)
-
-            // 1) Gratuits d'abord
-            let freeA = (packA == .coreFree)
-            let freeB = (packB == .coreFree)
-            if freeA != freeB { return freeA && !freeB }
-
-            // 2) Puis débloqués avant verrouillés
-            let unlockedA = storeManager.isPresetUnlocked(a)
-            let unlockedB = storeManager.isPresetUnlocked(b)
-            if unlockedA != unlockedB { return unlockedA && !unlockedB }
-
-            // 3) Puis alphabétique (displayName)
+            // Tri alphabétique par nom
             let nameA = PresetManager.preset(for: a).displayName
             let nameB = PresetManager.preset(for: b).displayName
             return nameA.localizedCaseInsensitiveCompare(nameB) == .orderedAscending
@@ -50,7 +36,6 @@ struct GameSelectionSheet: View {
             List {
                 ForEach(sortedPresets) { presetId in
                     let preset = PresetManager.preset(for: presetId)
-                    let isLocked = !storeManager.isPresetUnlocked(presetId)
                     let pack = GamePack.packContaining(presetId)
 
                     Button {
@@ -68,24 +53,15 @@ struct GameSelectionSheet: View {
                                     .font(.headline)
                                     .foregroundColor(.primary)
 
-                                HStack(spacing: 6) {
-                                    Text(pack.displayName)
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(1)
-
-                                    Text("• \(pack.price)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
+                                Text(pack.displayName)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
                             }
 
                             Spacer()
 
-                            if isLocked {
-                                Image(systemName: "lock.fill")
-                                    .foregroundColor(.orange)
-                            } else if presetId == selectedPresetID {
+                            if presetId == selectedPresetID {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.green)
                             }

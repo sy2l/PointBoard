@@ -21,12 +21,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var profileManager = ProfileManager.shared
-    @ObservedObject var storeManager = StoreManager.shared
     @State private var showCreateProfile = false
-    @State private var showPaywall = false
-    @State private var showPremiumPaywall = false
-    @State private var showPackUnlock = false
-    @State private var selectedPack: GamePack?
 
     var body: some View {
         NavigationStack {
@@ -34,9 +29,6 @@ struct SettingsView: View {
                 VStack(spacing: Spacing.lg) {
                     // Section Profils
                     profilesSection
-
-                    // Section Packs & Bundle
-                    packsSection
 
                     // Section À propos
                     aboutSection
@@ -56,15 +48,6 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showCreateProfile) {
                 CreateProfileSheet()
-            }
-            .sheet(isPresented: $showPaywall) {
-                BundlePaywallView()
-            }
-            .sheet(isPresented: $showPremiumPaywall) {
-                PremiumPaywallView()
-            }
-            .sheet(item: $selectedPack) { pack in
-                PackUnlockSheet(pack: pack)
             }
         }
     }
@@ -129,42 +112,6 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, Spacing.lg)
             }
-        }
-    }
-
-    // MARK: - Packs & Bundle Section
-
-    private var packsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            Text("Packs & Bundle")
-                .font(.cardTitle)
-                .foregroundColor(.textPrimary)
-                .padding(.horizontal, Spacing.lg)
-
-            // Premium Status (si acheté)
-            if storeManager.isPremiumUser {
-                PremiumStatusCard()
-                    .padding(.horizontal, Spacing.lg)
-            }
-
-            // Premium No Ads Card (si pas acheté)
-            if !storeManager.hasPremiumNoAds && !storeManager.hasAllPacksBundle {
-                PremiumCard(onTap: { showPremiumPaywall = true })
-                    .padding(.horizontal, Spacing.lg)
-            }
-
-            // Bundle Card (si pas acheté)
-            if !storeManager.hasAllPacksBundle {
-                BundleCard(onTap: { showPaywall = true })
-                    .padding(.horizontal, Spacing.lg)
-            }
-
-            // Liste des packs
-            PacksListView(onTapPack: { pack in
-                selectedPack = pack
-                showPackUnlock = true
-            })
-            .padding(.horizontal, Spacing.lg)
         }
     }
 
@@ -260,237 +207,7 @@ struct CreateProfileSheet: View {
     }
 }
 
-// MARK: - Premium Status Card
 
-struct PremiumStatusCard: View {
-    var body: some View {
-        HStack(spacing: Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.green, .green.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.title2)
-                    .foregroundColor(.white)
-            }
-            
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Premium activé")
-                    .font(.headline)
-                    .foregroundColor(.textPrimary)
-                
-                Text("Aucune publicité • Jusqu'à 12 joueurs")
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-            }
-            
-            Spacer()
-        }
-        .padding(Spacing.lg)
-        .background(Color.accentGreen.opacity(0.1))
-        .cornerRadius(CornerRadius.md)
-        .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
-    }
-}
-
-// MARK: - Premium Card
-
-struct PremiumCard: View {
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: Spacing.md) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.orange, .red],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 50, height: 50)
-                    
-                    Text("⭐️")
-                        .font(.title2)
-                }
-                
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("Premium - Sans publicité")
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    
-                    Text("Aucune pub + 12 joueurs pour 0,99€")
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.textSecondary)
-            }
-            .padding(Spacing.lg)
-            .background(
-                LinearGradient(
-                    colors: [Color.orange.opacity(0.1), Color.red.opacity(0.1)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .cornerRadius(CornerRadius.md)
-            .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Bundle Card
-
-struct BundleCard: View {
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: Spacing.md) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [.blue, .purple],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 50, height: 50)
-                    
-                    Text("🎁")
-                        .font(.title2)
-                }
-                
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("Bundle All Packs")
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    
-                    Text("Tous les packs + Premium pour 3,99€")
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.textSecondary)
-            }
-            .padding(Spacing.lg)
-            .background(
-                LinearGradient(
-                    colors: [Color.appPrimary.opacity(0.1), Color.purple.opacity(0.1)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
-            .cornerRadius(CornerRadius.md)
-            .shadow(color: Color.cardShadow, radius: 4, x: 0, y: 2)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Packs List View
-
-struct PacksListView: View {
-    @ObservedObject private var storeManager = StoreManager.shared
-    
-    let onTapPack: (GamePack) -> Void
-    
-    var body: some View {
-        VStack(spacing: Spacing.sm) {
-            ForEach(GamePack.allCases.filter { $0 != .coreFree }, id: \.self) { pack in
-                PackRowView(
-                    pack: pack,
-                    isUnlocked: storeManager.isPackUnlocked(pack),
-                    onTap: {
-                        // Ne pas ouvrir le sheet si déjà débloqué
-                        if !storeManager.isPackUnlocked(pack) {
-                            onTapPack(pack)
-                        }
-                    }
-                )
-            }
-        }
-    }
-}
-
-// MARK: - Pack Row View
-
-struct PackRowView: View {
-    let pack: GamePack
-    let isUnlocked: Bool
-    let onTap: () -> Void
-    
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: Spacing.md) {
-                Text(packEmoji)
-                    .font(.title2)
-                
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(pack.displayName)
-                        .font(.bodyText.weight(.semibold))
-                        .foregroundColor(.textPrimary)
-                    
-                    if isUnlocked {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.accentGreen)
-                            Text("Débloqué")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                    } else {
-                        Text("0,99€")
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-                }
-                
-                Spacer()
-                
-                if !isUnlocked {
-                    Image(systemName: "lock.fill")
-                        .foregroundColor(.textSecondary)
-                }
-            }
-            .padding(Spacing.md)
-            .background(Color.cardBackground)
-            .cornerRadius(CornerRadius.md)
-        }
-        .buttonStyle(.plain)
-    }
-    
-    private var packEmoji: String {
-        switch pack {
-        case .coreFree: return "⭐️"
-        case .classicCards: return "🃏"
-        case .funCardsDice: return "🎲"
-        case .boardFamily: return "♟️"
-        case .outdoorSport: return "☀️"
-        case .partyNight: return "🎉"
-        case .duelsStrategy: return "🧠"
-        case .kidsFamily2: return "👨‍👩‍👧‍👦"
-        }
-    }
-}
 
 // MARK: - Preview
 

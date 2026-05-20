@@ -4,6 +4,7 @@
  
  Gestionnaire de l'historique des parties terminées.
  Sprint 1 - V3.0
+ Updated by sy2l on 12/05/2026 — Migration V6.0.0 : Historique illimité (gratuit)
  */
 
 import Foundation
@@ -13,7 +14,6 @@ class HistoryManager {
     
     private let fileManager = FileManager.default
     private let historyDirectory: URL
-    private let freeLimit = 10 // Limite freemium
     
     private init() {
         // Créer le dossier History dans Documents
@@ -28,38 +28,7 @@ class HistoryManager {
     
     // MARK: - Archive
     
-    /// Vérifie si l'utilisateur peut sauvegarder une partie
-    @MainActor
-    func canSaveGame() -> Bool {
-        // Si Bundle acheté, pas de limite
-        if StoreManager.shared.hasAllPacksBundle {
-            return true
-        }
-        // Limite de 10 parties pour utilisateurs gratuits
-        return loadHistory().count < freeLimit
-    }
-    
-    /// Archive une partie terminée après avoir vu une pub si nécessaire
-    @MainActor
-    func archiveGameWithAdCheck(_ game: Game, completion: @escaping (Bool) -> Void) {
-        if canSaveGame() {
-            // Sauvegarder directement
-            archiveGame(game)
-            completion(true)
-        } else {
-            // Afficher une pub récompensée avant de sauvegarder
-            AdManager.shared.showRewardedAd { [weak self] success in
-                if success {
-                    self?.archiveGame(game)
-                    completion(true)
-                } else {
-                    completion(false)
-                }
-            }
-        }
-    }
-    
-    /// Archive une partie terminée
+    /// Archive une partie terminée (historique illimité)
     @MainActor
     func archiveGame(_ game: Game) {
         let result = GameResult(from: game)
@@ -75,9 +44,6 @@ class HistoryManager {
             try data.write(to: fileURL)
             
             print("✅ Partie archivée : \(filename)")
-            
-            // Vérifier la limite freemium
-            enforceFreemiumLimit()
         } catch {
             print("❌ Erreur lors de l'archivage : \(error)")
         }
@@ -107,34 +73,6 @@ class HistoryManager {
         
         // Trier par date décroissante
         return results.sorted { $0.date > $1.date }
-    }
-    
-    // MARK: - Freemium Logic
-    
-    /// Vérifie si la limite freemium est atteinte
-    @MainActor
-    func isLimitReached() -> Bool {
-        let hasBundle = StoreManager.shared.hasAllPacksBundle
-        return !hasBundle && loadHistory().count >= freeLimit
-    }
-    
-    /// Vérifie et applique la limite freemium (3 parties max)
-    @MainActor
-    private func enforceFreemiumLimit() {
-        let hasBundle = StoreManager.shared.hasAllPacksBundle
-        
-        if !hasBundle {
-            let history = loadHistory()
-            
-            // Si plus de 10 parties, supprimer les plus anciennes
-            if history.count > freeLimit {
-                let toDelete = history.suffix(from: freeLimit)
-                for result in toDelete {
-                    deleteGame(result.id)
-                }
-                print("🗑️ Suppression automatique : \(toDelete.count) partie(s) supprimée(s)")
-            }
-        }
     }
     
     // MARK: - Delete

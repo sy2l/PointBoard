@@ -3,14 +3,14 @@
  * PointBoard
  *
  * Created by sy2l on 21/01/2026.
+ * Updated by sy2l on 20/05/2026 — V6.1.0 : App gratuite (20 joueurs max)
  * -----------------------------------------------------------------------------
  * AddPlayerSheet — Ajout d'un joueur (invité ou profil)
  * -----------------------------------------------------------------------------
- * Mise à jour Freemium:
- * - Free : 6 joueurs gratuits
- * - Free : ajouts 7..12 => pub statique à CHAQUE ajout
- * - Free : tentative 13e => popup "Deviens Pro"
- * - Pro / Trial : pas de pub
+ * - 20 joueurs maximum (gratuit)
+ * - Ajout invité (TextField)
+ * - Ajout profil enregistré (Liste)
+ * - Modification/Suppression en cours de partie
  * -----------------------------------------------------------------------------
  */
 
@@ -24,7 +24,7 @@ struct AddPlayerSheet: View {
     // MARK: - Inputs
     @Binding var playerSlots: [PlayerSlot]
 
-    let maxPlayers: Int
+    let maxPlayers: Int = 20
     let canAddPlayer: Bool
     let availableProfiles: [PlayerProfile]
 
@@ -33,17 +33,8 @@ struct AddPlayerSheet: View {
 
     let onClose: () -> Void
 
-    // MARK: - Dependencies
-    @ObservedObject private var storeManager = StoreManager.shared
-    @ObservedObject private var adManager = AdManager.shared
-
-    // MARK: - Freemium rules
-    private let freeIncludedPlayersCount: Int = 6
-    private let freeHardCapPlayersCount: Int = 12
-
     // MARK: - State
     @State private var guestName: String = ""
-    @State private var showProUpsellAlert: Bool = false
 
     // MARK: - Computed
 
@@ -51,58 +42,14 @@ struct AddPlayerSheet: View {
         guestName.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private var isProOrTrial: Bool {
-        storeManager.isPremiumUser
-    }
-
     private var canSubmitGuest: Bool {
         !trimmedGuestName.isEmpty
-    }
-
-    // MARK: - Banner (top) state
-
-    private var shouldShowFreemiumBanner: Bool {
-        !isProOrTrial
-    }
-
-    private var shouldShowAdRequiredBanner: Bool {
-        // Free only + entre 7 et 12 (donc count > 6, et < 12)
-        guard !isProOrTrial else { return false }
-        return playerSlots.count > freeIncludedPlayersCount
-            && playerSlots.count < freeHardCapPlayersCount
-    }
-
-    private var bannerTitle: String {
-        if isProOrTrial { return "PREMIUM" }
-        return shouldShowAdRequiredBanner ? "PUB" : "FREE"
-    }
-
-    private var bannerSubtitle: String {
-        if isProOrTrial {
-            return "Jusqu'à 12 joueurs"
-        }
-        if shouldShowAdRequiredBanner {
-            return "de 7 à 12 joueurs"
-        }
-        return "jusqu’à 6 joueurs"
-    }
-
-    private var bannerIconSystemName: String {
-        if isProOrTrial { return "crown.fill" }
-        return shouldShowAdRequiredBanner ? "lock.fill" : "checkmark.seal.fill"
-    }
-
-    private var bannerTintColor: Color {
-        if isProOrTrial { return .yellow }
-        return shouldShowAdRequiredBanner ? .orange : .green
     }
 
     // MARK: - Body
     var body: some View {
         NavigationStack {
             List {
-                // MARK: - Header (Top)
-                
                 // MARK: - Add guest
                 
                 Section(header: Text("Ajouter un joueur")) {
@@ -124,14 +71,8 @@ struct AddPlayerSheet: View {
 
                 // MARK: - Players list (editable)
                 
-                Section("Liste") {
+                Section("Liste (max 20 joueurs)") {
                     VStack(alignment: .leading, spacing: 10) {
-                        // MARK: - Freemium banner (requested: top, after "Joueurs")
-                        
-                        if shouldShowFreemiumBanner {
-                            freemiumBanner
-                        }
-                        
                         ForEach($playerSlots) { $slot in
                             PlayerSlotEditableRow(
                                 slot: $slot,
@@ -189,10 +130,6 @@ struct AddPlayerSheet: View {
             .listStyle(.insetGrouped)
             .navigationTitle("Joueurs")
             .navigationBarTitleDisplayMode(.inline)
-
-            // -----------------------------------------------------------------
-            // MARK: - Toolbar
-            // -----------------------------------------------------------------
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Text("\(playerSlots.count)/\(maxPlayers)")
@@ -209,75 +146,16 @@ struct AddPlayerSheet: View {
                     .buttonStyle(.plain)
                 }
             }
-            
-            // MARK: - Pro upsell
-            
-            .alert("Deviens Pro", isPresented: $showProUpsellAlert) {
-                Button("Plus tard", role: .cancel) { }
-                Button("Voir l’offre Pro") {
-                    // TODO: branche ton paywall ici
-                }
-            } message: {
-                Text("La version gratuite est limitée à 12 joueurs. Passe Pro pour en ajouter davantage.")
-            }
         }
     }
 
-    // MARK: - UI Components
+    // MARK: - Add Player Logic
 
-    private var freemiumBanner: some View {
-        HStack(spacing: 10) {
-            Image(systemName: bannerIconSystemName)
-                .foregroundColor(bannerTintColor)
-
-            Text("\(bannerTitle) ")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(bannerTintColor)
-            +
-            Text(bannerSubtitle)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            Spacer()
-        }
-        .padding(.vertical, 10)
-        .padding(.horizontal, 12)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-    }
-
-    // MARK: - Gating core
-
-    /// ✅ Garantit :
-    /// - 1..6 : direct
-    /// - 7..12 : pub à CHAQUE ajout
-    /// - 13 : popup pro
+    /// Ajout de joueur (20 joueurs maximum, gratuit)
     private func attemptAddPlayer(performAdd: @escaping () -> Void) {
-
-        // MARK: - Pro/Trial: always allow (within maxPlayers defensive)
-        if isProOrTrial {
-            guard playerSlots.count < maxPlayers else { return }
-            performAdd()
-            return
-        }
-
-        // MARK: - Free: 13th attempt -> upsell (block)
-        if playerSlots.count >= freeHardCapPlayersCount {
-            showProUpsellAlert = true
-            return
-        }
-
-        // MARK: - Free: first 6 are free
-        if playerSlots.count < freeIncludedPlayersCount {
-            performAdd()
-            return
-        }
-
-        // MARK: - Free: players 7..12 => ad EACH add
-        adManager.showStaticGateAd(duration: 15) {
-            performAdd()
-        }
+        // Limite à 20 joueurs
+        guard playerSlots.count < maxPlayers else { return }
+        performAdd()
     }
 
     // MARK: - Actions
@@ -369,7 +247,6 @@ private struct AddPlayerSheetPreviewWrapper: View {
     var body: some View {
         AddPlayerSheet(
             playerSlots: $playerSlots,
-            maxPlayers: 6,
             canAddPlayer: true,
             availableProfiles: [],
             onTapPickProfile: { _ in },

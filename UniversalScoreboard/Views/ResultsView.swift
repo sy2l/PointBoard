@@ -31,7 +31,6 @@ struct ResultsView: View {
     // MARK: - Dependencies
     @EnvironmentObject private var viewModel: GameViewModel
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var storeManager = StoreManager.shared
 
     // MARK: - State
     @State private var sortBy: SortMode = .survival
@@ -40,10 +39,6 @@ struct ResultsView: View {
     @State private var selectedShareIcon: ShareManager.ShareIcon = .trophy
     @State private var showIconPicker: Bool = false
     @State private var sharePayload: SharePayload? = nil
-
-    // Ads / advanced stats
-    @State private var showStatsAdAlert: Bool = false
-    @State private var showAdvancedStats: Bool = false
 
     enum SortMode {
         case survival
@@ -98,13 +93,6 @@ struct ResultsView: View {
                     icon: payload.icon,
                     themeColor: payload.themeColor
                 )
-            }
-
-            // MARK: - Advanced Stats Sheet
-            .sheet(isPresented: $showAdvancedStats) {
-                if let game = viewModel.game {
-                    AdvancedStatsView(game: game, themeColor: themeColor)
-                }
             }
 
         } else {
@@ -206,46 +194,6 @@ struct ResultsView: View {
                     .background(themeColor.opacity(0.10))
                     .foregroundColor(themeColor)
                     .cornerRadius(12)
-            }
-
-            if !storeManager.hasAllPacksBundle {
-                Button {
-                    showStatsAdAlert = true
-                } label: {
-                    Label("Voir les stats avancées", systemImage: "chart.bar.fill")
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.info.opacity(0.1))
-                        .foregroundColor(Color.info)
-                        .cornerRadius(12)
-                }
-                .alert("Stats avancées", isPresented: $showStatsAdAlert) {
-                    Button("Voir le Bundle", role: .none) {
-                        // TODO: ouvrir BundlePaywallView
-                    }
-                    Button("Regarder une vidéo", role: .none) {
-                        AdManager.shared.showRewardedAd { success in
-                            if success { showAdvancedStats = true }
-                        }
-                    }
-                    Button("Annuler", role: .cancel) {}
-                } message: {
-                    Text("Passez à Pro pour accéder aux stats avancées ou regardez une vidéo.")
-                }
-            } else {
-                // Utilisateurs Pro ou en essai : accès direct
-                Button {
-                    showAdvancedStats = true
-                } label: {
-                    Label("Voir les stats avancées", systemImage: "chart.bar.fill")
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.info.opacity(0.1))
-                        .foregroundColor(Color.info)
-                        .cornerRadius(12)
-                }
             }
 
             HStack(spacing: 12) {

@@ -27,7 +27,6 @@ struct GameView: View {
     @Environment(\.dismiss) private var dismiss
 
     @ObservedObject private var profileManager = ProfileManager.shared
-    @ObservedObject private var storeManager = StoreManager.shared
 
     // MARK: - State
     @State private var deltas: [String: Int] = [:]
@@ -138,12 +137,11 @@ struct GameView: View {
 
             .sheet(isPresented: $showEditPlayersSheet) {
                 // ⚠️ Pas de dépendance à une prop incertaine (isPro)
-                let maxPlayers = 10
+                let maxPlayers = 20
                 let canAdd = editingPlayerSlots.count < maxPlayers
 
                 AddPlayerSheet(
                     playerSlots: $editingPlayerSlots,
-                    maxPlayers: maxPlayers,
                     canAddPlayer: canAdd,
                     availableProfiles: profileManager.profiles,
                     onTapPickProfile: { slotId in

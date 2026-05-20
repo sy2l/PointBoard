@@ -4,14 +4,12 @@
 //
 //  Composant de configuration des joueurs
 //
-//  Règles UX (freemium):
-//  - Free : 6 joueurs inclus.
-//  - Free : ajout 7..12 => pub statique à CHAQUE ajout (géré dans AddPlayerSheet).
-//  - Free : tentative 13e => popup "Deviens pro" (géré dans AddPlayerSheet).
-//  - Pro : illimité.
+//  Règles UX:
+//  - App 100% gratuite : pas de limite de joueurs (max 99)
+//  - Gestion des profils et des slots
 //
 //  Created by sy2l
-//  Updated on 23/02/2026 — Gating moved to AddPlayerSheet (real add actions)
+//  Updated on 20/05/2026 — V6.2.0 : Suppression du freemium, app 100% gratuite
 //
 
 import SwiftUI
@@ -24,7 +22,6 @@ struct PlayersConfigCard: View {
 
     // MARK: - Dependencies
     @ObservedObject private var profileManager = ProfileManager.shared
-    @ObservedObject private var storeManager = StoreManager.shared
 
     // MARK: - Sheet routing (2 sheets only)
     private enum ActiveSheet: Identifiable {
@@ -44,12 +41,9 @@ struct PlayersConfigCard: View {
 
     @State private var activeSheet: ActiveSheet? = nil
 
-    // MARK: - Freemium
-    private let freeHardCapPlayersCount: Int = 12
-
-    // MARK: - Computed
+    // MARK: - Computed (App 100% gratuite - 20 joueurs max)
     private var maxPlayers: Int {
-        storeManager.hasAllPacksBundle ? 99 : freeHardCapPlayersCount
+        20 // Limite app gratuite (cohérent avec AddPlayerSheet)
     }
 
     private var canAddPlayer: Bool {
@@ -86,7 +80,6 @@ struct PlayersConfigCard: View {
             case .playersEditor:
                 AddPlayerSheet(
                     playerSlots: $playerSlots,
-                    maxPlayers: maxPlayers,
                     canAddPlayer: canAddPlayer,
                     availableProfiles: availableProfiles,
                     onTapPickProfile: { slotId in

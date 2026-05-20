@@ -3,7 +3,7 @@
 //  PointBoard
 //
 //  Created by sy2l on 06/01/2026.
-//  Updated by sy2l on 06/01/2026 — Ajout garde-fou debug (détection presets dupliqués)
+//  Updated by sy2l on 21/05/2026 — V6.2.0 : App 100% gratuite (sans pub, sans IAP)
 //  -----------------------------------------------------------------------------
 //  GamePack — Système de packs (monétisation)
 //  -----------------------------------------------------------------------------
@@ -28,19 +28,16 @@ import Foundation
 
 enum GamePack: String, CaseIterable, Identifiable, Codable {
 
-    // MARK: - Packs de base (Base Bundle pour Pro)
+    // MARK: - Packs disponibles (tous gratuits)
 
-    case coreFree      = "pack_core"           // Gratuit
-    case classicCards  = "pack_cards_classic"  // 0,99€
-    case funCardsDice  = "pack_cards_fun"      // 0,99€
-    case boardFamily   = "pack_board"          // 0,99€
-    case outdoorSport  = "pack_outdoor"        // 0,99€
-
-    // MARK: - Nouveaux packs (Hors Bundle Pro initial)
-
-    case partyNight    = "pack_party_night"       // 0,99€
-    case duelsStrategy = "pack_duels_strategy"    // 0,99€
-    case kidsFamily2   = "pack_kids_family_2"     // 0,99€
+    case coreFree      = "pack_core"
+    case classicCards  = "pack_cards_classic"
+    case funCardsDice  = "pack_cards_fun"
+    case boardFamily   = "pack_board"
+    case outdoorSport  = "pack_outdoor"
+    case partyNight    = "pack_party_night"
+    case duelsStrategy = "pack_duels_strategy"
+    case kidsFamily2   = "pack_kids_family_2"
 
     var id: String { rawValue }
 
@@ -48,7 +45,7 @@ enum GamePack: String, CaseIterable, Identifiable, Codable {
 
     var displayName: String {
         switch self {
-        case .coreFree:       return "Basiques & Démos (Gratuit)"
+        case .coreFree:       return "Basiques & Démos"
         case .classicCards:   return "Pack Cartes Classiques 🃏"
         case .funCardsDice:   return "Pack Cartes & Dés Fun 🎲"
         case .boardFamily:    return "Pack Société & Famille ♟️"
@@ -61,22 +58,19 @@ enum GamePack: String, CaseIterable, Identifiable, Codable {
 
     /// Prix “string” (simple UI).
     /// - Note : si tu veux le vrai prix StoreKit (localisé), récupère Product.displayPrice côté StoreManager.
-    var price: String { self == .coreFree ? "Gratuit" : "0,99 €" }
+    var price: String {
+        // Tous les packs sont gratuits
+        switch self {
+        case .coreFree, .classicCards, .funCardsDice, .boardFamily, .outdoorSport, .partyNight, .duelsStrategy, .kidsFamily2:
+            return "Gratuit"
+        }
+    }
 
     // MARK: - StoreKit Product IDs
 
-    /// ID IAP StoreKit (doit matcher App Store Connect).
+    /// Obsolète: les IAP sont retirés, conserver pour compatibilité binaire.
     var productID: String? {
-        switch self {
-        case .coreFree:       return nil
-        case .classicCards:   return "com.universalscoreboard.pack.classicCards"
-        case .funCardsDice:   return "com.universalscoreboard.pack.funCardsDice"
-        case .boardFamily:    return "com.universalscoreboard.pack.boardFamily"
-        case .outdoorSport:   return "com.universalscoreboard.pack.outdoorSport"
-        case .partyNight:     return "com.universalscoreboard.pack.partyNight"
-        case .duelsStrategy:  return "com.universalscoreboard.pack.duelsStrategy"
-        case .kidsFamily2:    return "com.universalscoreboard.pack.kidsFamily2"
-        }
+        return nil
     }
 
     // MARK: - Description (marketing)
@@ -174,6 +168,8 @@ enum GamePack: String, CaseIterable, Identifiable, Codable {
 
     /// Packs payants (utile pour la boutique).
     static var paidPacks: [GamePack] {
-        allCases.filter { $0 != .coreFree }
+        // Plus de packs payants
+        return []
     }
 }
+

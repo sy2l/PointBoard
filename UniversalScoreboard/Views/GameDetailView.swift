@@ -20,7 +20,6 @@ import SwiftUI
 
 struct GameDetailView: View {
     let result: GameResult
-    @ObservedObject private var storeManager = StoreManager.shared
 
     var themeColor: Color {
         return Color.appPrimary
@@ -70,13 +69,10 @@ struct GameDetailView: View {
             }) {
                 Label("Partager", systemImage: "square.and.arrow.up")
             }
-
-            if storeManager.hasAllPacksBundle {
-                Button(action: {
-                    ShareManager.shared.exportCSV(result: result)
-                }) {
-                    Label("Exporter CSV", systemImage: "doc.text")
-                }
+            Button(action: {
+                ShareManager.shared.exportCSV(result: result)
+            }) {
+                Label("Exporter CSV", systemImage: "doc.text")
             }
         } label: {
             Image(systemName: "square.and.arrow.up")

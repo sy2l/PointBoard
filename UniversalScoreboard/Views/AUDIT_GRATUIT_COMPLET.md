@@ -1,7 +1,8 @@
 # 🔍 AUDIT COMPLET — Vérification App 100% Gratuite
 
 **Date** : 20/05/2026  
-**Version cible** : V6.1.0  
+**Mise à jour** : 31/05/2026 — Suppression mentions packs IAP
+**Version cible** : V6.2.1  
 **Objectif** : S'assurer que TOUTE logique paywall/IAP/unlock a été retirée
 
 ---
@@ -51,78 +52,30 @@
 
 ## 🚨 FICHIERS AVEC CODE PAYWALL RESTANT
 
-### 1️⃣ **GamePack.swift** ⚠️ PROBLÈME MAJEUR
+### 1️⃣ **GamePack.swift** ⚠️ CORRECTIONS MANUELLES REQUISES
 
 **Fichier** : `/repo/GamePack.swift`  
-**Status** : ❌ LOGIQUE IAP ENCORE PRÉSENTE
-
-#### Problèmes identifiés :
-
-```swift
-// ❌ Référence aux packs payants
-var price: String { self == .coreFree ? "Gratuit" : "0,99 €" }
-
-// ❌ Product IDs StoreKit
-var productID: String? {
-    case .classicCards:   return "com.universalscoreboard.pack.classicCards"
-    case .funCardsDice:   return "com.universalscoreboard.pack.funCardsDice"
-    // ... etc
-}
-
-// ❌ Fonction pour les packs payants
-static var paidPacks: [GamePack] {
-    allCases.filter { $0 != .coreFree }
-}
-```
+**Status** : ⚠️ CORRECTIONS MANUELLES NÉCESSAIRES (encodage emojis)
 
 #### Actions requises :
 
-- ❌ **Supprimer** : `price` property (obsolète)
-- ❌ **Supprimer** : `productID` property (obsolète)
-- ❌ **Supprimer** : `paidPacks` computed property (obsolète)
-- ✅ **Garder** : `displayName`, `description`, `includedPresets` (pour UI)
-- ✅ **Simplifier** : Tous les packs deviennent gratuits
+- ❌ **Supprimer** : `price` property (lignes ~57-66)
+- ❌ **Supprimer** : `productID` property (lignes ~68-73)
+- ✅ **FAIT** : `paidPacks` supprimé automatiquement
+
+**Guide complet** : Voir `/repo/CORRECTIONS-MANUELLES-GamePack.md`
 
 ---
 
-### 2️⃣ **SettingsView.swift** ⚠️ PROBLÈME MAJEUR
+### 2️⃣ **SettingsView.swift** ✅ DÉJÀ NETTOYÉ
 
 **Fichier** : `/repo/SettingsView.swift`  
-**Status** : ❌ UI PAYWALL ENCORE PRÉSENTE
+**Status** : ✅ PROPRE (vérifié le 31/05/2026)
 
-#### Composants à supprimer :
-
-```swift
-// ❌ Card Premium (obsolète)
-struct PremiumStatusCard: View { ... }
-struct PremiumCard: View { ... }
-
-// ❌ Card Bundle (obsolète)
-struct BundleCard: View { ... }
-
-// ❌ Liste des packs avec unlock (obsolète)
-struct PacksListView: View {
-    let isUnlocked: Bool  // ❌ Plus besoin
-    // ...
-}
-
-// ❌ Row pack avec lock icon (obsolète)
-struct PackRowView: View {
-    let isUnlocked: Bool  // ❌ Plus besoin
-    if !isUnlocked {
-        Image(systemName: "lock.fill")  // ❌ À retirer
-    }
-}
-```
-
-#### Actions requises :
-
-- ❌ **Supprimer** : `PremiumStatusCard`
-- ❌ **Supprimer** : `PremiumCard`
-- ❌ **Supprimer** : `BundleCard`
-- ❌ **Supprimer** : `PacksListView` (ou simplifier sans unlock)
-- ❌ **Supprimer** : `PackRowView.isUnlocked`
-- ❌ **Supprimer** : Toute référence à `StoreManager.shared`
+- ✅ Aucune référence à "premium"
+- ✅ Aucune référence à "pack"
+- ✅ Pas de PremiumCard, BundleCard, PacksListView
+- ✅ Fichier complètement nettoyé
 
 ---
 
@@ -134,54 +87,51 @@ struct PackRowView: View {
 | MigrationManager.swift | ✅ PROPRE | Aucune |
 | StoreManager.swift | ⚠️ À SUPPRIMER | Supprimer manuellement (Xcode) |
 | PackUnlockSheet.swift | ⚠️ À SUPPRIMER | Supprimer manuellement (Xcode) |
-| **GamePack.swift** | ❌ CODE IAP | **Retirer price, productID, paidPacks** |
-| **SettingsView.swift** | ❌ UI PAYWALL | **Retirer toutes les cards Premium/Bundle/Lock** |
+| **GamePack.swift** | ⚠️ MANUEL | **Supprimer `price` + `productID`** |
+| **SettingsView.swift** | ✅ PROPRE | Aucune (vérifié) |
+| SetupView.swift | ✅ PROPRE | Aucune (vérifié) |
+| GameSelectionSheet.swift | ✅ PROPRE | Aucune (vérifié) |
 
 ---
 
-## 🎯 PLAN D'ACTION
+## 🎯 PLAN D'ACTION FINAL
 
-### Phase 1 : Nettoyage GamePack.swift ⏳
-1. Supprimer `price` property
-2. Supprimer `productID` property
-3. Supprimer `paidPacks` computed property
-4. Mettre à jour les commentaires (tous les packs = gratuits)
+### Phase 1 : GamePack.swift ⏳ **MANUEL**
+1. Ouvrir `GamePack.swift` dans Xcode
+2. Supprimer property `price` (lignes ~57-66)
+3. Supprimer property `productID` (lignes ~68-73)
+4. Compiler (Cmd+B)
 
-### Phase 2 : Nettoyage SettingsView.swift ⏳
-1. Supprimer `PremiumStatusCard`
-2. Supprimer `PremiumCard`
-3. Supprimer `BundleCard`
-4. Simplifier `PackRowView` (retirer lock icon + isUnlocked)
-5. Supprimer toutes les références à `StoreManager.shared`
-
-### Phase 3 : Suppression fichiers Xcode ⏳
+### Phase 2 : Suppression fichiers Xcode ⏳
 1. Supprimer `StoreManager.swift` (Move to Trash)
 2. Supprimer `PackUnlockSheet.swift` (Move to Trash)
 3. Clean Build Folder
 
-### Phase 4 : Tests finaux ⏳
+### Phase 3 : Tests finaux ⏳
 1. Vérifier que l'app compile
 2. Tester l'ajout de 20 joueurs
-3. Vérifier que tous les packs sont visibles/accessibles
+3. Vérifier que tous les jeux (59 presets) sont accessibles
 4. Vérifier qu'aucun paywall n'apparaît
 
 ---
 
-## 🚀 Prêt à appliquer ?
+## 🚀 Prêt pour soumission App Store
 
-Dis **"applique phase 1"** pour nettoyer `GamePack.swift`  
-Dis **"applique phase 2"** pour nettoyer `SettingsView.swift`  
-Dis **"applique tout"** pour tout faire d'un coup ! 🎯
+Une fois les corrections manuelles appliquées :
+- ✅ Aucune référence IAP dans le code
+- ✅ Tous les jeux débloqués
+- ✅ Aucun paywall
+- ✅ App 100% gratuite
 
 ---
 
 ## 📝 Notes importantes
 
-- ⚠️ Les fichiers `StoreManager.swift` et `PackUnlockSheet.swift` doivent être supprimés **manuellement dans Xcode**
-- ⚠️ `GamePack.swift` contient encore des Product IDs StoreKit (obsolètes)
-- ⚠️ `SettingsView.swift` affiche encore des UI de paywall (cards Premium/Bundle)
-- ✅ `AddPlayerSheet.swift` est déjà 100% propre (20 joueurs gratuits)
-- ✅ `MigrationManager.swift` nettoie correctement les anciennes données IAP
+- ✅ `SetupView.swift` déjà propre (vérifié 31/05)
+- ✅ `GameSelectionSheet.swift` déjà propre (vérifié 31/05)
+- ✅ `SettingsView.swift` déjà propre (vérifié 31/05)
+- ⚠️ `GamePack.swift` nécessite corrections manuelles (encodage emojis)
+- ✅ `paidPacks` déjà supprimé automatiquement
 
 ---
 
@@ -190,6 +140,7 @@ Dis **"applique tout"** pour tout faire d'un coup ! 🎯
 **App 100% gratuite, sans restriction, sans paywall, sans IAP.**
 
 - ✅ 20 joueurs max (gratuit)
-- ✅ Tous les packs débloqués
+- ✅ 59 jeux débloqués (tous les packs)
 - ✅ Aucune référence à StoreKit, RevenueCat, IAP
 - ✅ UI simplifiée sans lock icons
+

@@ -3,7 +3,7 @@
  * PointBoard
  *
  * Created by sy2l on 06/01/2026.
- * Updated by sy2l on 06/01/2026 — V4.0.3 (packs + nouveaux presets + helpers)
+ * Updated by sy2l on 06/01/2026 — V4.0.3 (catégories + nouveaux presets + helpers)
  * -----------------------------------------------------------------------------
  * PresetManager — Base de données des presets (configurations de jeux)
  * -----------------------------------------------------------------------------
@@ -13,8 +13,8 @@
  *   - Lookup sécurisé par PresetID (fallback sur .generic).
  *
  * ► Notes de maintenance
- *   - Ce fichier ne gère PAS la monétisation (packs / StoreKit).
- *     Le lien Pack -> PresetID est dans GamePack.includedPresets.
+ *   - Ce fichier ne gère PAS la monétisation.
+ *     Le lien Catégorie -> PresetID est dans GamePack.includedPresets.
  *   - Ici : uniquement la config du moteur de score (pas de règles texte).
  *
  * ► Helpers
@@ -48,7 +48,7 @@ struct PresetManager {
             )
         ),
 
-        // MARK: - Pack Cartes & Dés Fun 🎲
+        // MARK: - Cartes & Dés Fun 🎲
 
         GamePreset(
             id: .skyjo,
@@ -146,7 +146,7 @@ struct PresetManager {
             )
         ),
 
-        // MARK: - Pack Cartes Classiques 🃏
+        // MARK: - Cartes Classiques 🃏
 
         GamePreset(
             id: .uno,
@@ -244,7 +244,7 @@ struct PresetManager {
             )
         ),
 
-        // MARK: - Pack Société & Famille ♟️
+        // MARK: - Société & Famille ♟️
 
         GamePreset(
             id: .scrabble,
@@ -342,7 +342,7 @@ struct PresetManager {
             )
         ),
 
-        // MARK: - Pack Extérieur & Sport ☀️
+        // MARK: - Extérieur & Sport ☀️
 
         GamePreset(
             id: .molkky,
@@ -440,7 +440,7 @@ struct PresetManager {
             )
         ),
 
-        // MARK: - Packs additionnels (Party / Duels / Kids)
+        // MARK: - Jeux supplémentaires (Party / Duels / Enfants)
 
         // Party Night 🎉
         GamePreset(id: .dobble, displayName: "Dobble", settings: .init(mode: .wins, initialValue: 0, target: .init(value: 5, comparator: .greaterThanOrEqual, consequence: .winner), endCondition: .init(type: .targetReached, value: 1), lowestScoreIsBest: false)),

@@ -64,42 +64,142 @@ struct PlayersConfigCard: View {
 
     // MARK: - Body
     var body: some View {
-        VStack(spacing: Spacing.md) {
-            PlayersCard(
-                playerCount: playerSlots.count,
-                maxPlayers: maxPlayers,
-                playerNames: playerNames,
-                onAdd: { activeSheet = .playersEditor },
-                onProfile: { activeSheet = .profiles(slotId: nil) }
-            )
-        }
-        .sheet(item: $activeSheet) { sheet in
-            switch sheet {
-
-            // MARK: - Sheet 1 — Joueurs (AddPlayerSheet)
-            case .playersEditor:
-                AddPlayerSheet(
-                    playerSlots: $playerSlots,
-                    canAddPlayer: canAddPlayer,
-                    availableProfiles: availableProfiles,
-                    onTapPickProfile: { slotId in
-                        activeSheet = .profiles(slotId: slotId)
-                    },
-                    onClose: { activeSheet = nil }
-                )
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
-
-            // MARK: - Sheet 2 — Profils (global ou picker)
-            case .profiles(let slotId):
-                profilesSheet(slotId: slotId)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+        HStack(spacing: Spacing.sm) {
+            // -----------------------------------------------------------------
+            // MARK: - Carte affichage joueurs (gauche) - Style 3D non cliquable
+            // -----------------------------------------------------------------
+            HStack(spacing: Spacing.md) {
+                // Icône joueurs
+                Image(systemName: "person.2.fill")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.3))
+                
+                // Nombre de joueurs
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(playerSlots.count)")
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    
+                    Text("joueur\(playerSlots.count > 1 ? "s" : "")")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.85))
+                }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.lg)
+            .background(
+                // Dégradé vert (gaming)
+                LinearGradient(
+                    colors: [
+                        Color.accentGreen.opacity(0.9),
+                        Color.accentGreen
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.6),
+                                .white.opacity(0.05)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 3
+                    )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous))
+            .shadow(
+                color: Color.accentGreen.opacity(0.5),
+                radius: 12,
+                x: 0,
+                y: 8
+            )
+            .shadow(
+                color: Color.black.opacity(0.25),
+                radius: 6,
+                x: 0,
+                y: 4
+            )
+            
+            // -----------------------------------------------------------------
+            // MARK: - Bouton ajouter joueur (droite) - Rouge avec effet 3D
+            // -----------------------------------------------------------------
+            Button(action: {
+                // Ajoute directement un nouveau joueur
+                addNewPlayer()
+            }) {
+                VStack(spacing: 4) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 40, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text("Ajouter")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                .frame(width: 100)
+                .padding(.vertical, Spacing.lg)
+                .background(
+                    // Dégradé rouge
+                    LinearGradient(
+                        colors: [
+                            Color.accentRed.opacity(0.9),
+                            Color.accentRed
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    .white.opacity(0.6),
+                                    .white.opacity(0.05)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 3
+                        )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous))
+                .shadow(
+                    color: Color.accentRed.opacity(0.5),
+                    radius: 12,
+                    x: 0,
+                    y: 8
+                )
+                .shadow(
+                    color: Color.black.opacity(0.25),
+                    radius: 6,
+                    x: 0,
+                    y: 4
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(!canAddPlayer)
+            .opacity(canAddPlayer ? 1.0 : 0.5)
         }
     }
-
-    // MARK: - Sheet 2 builder
+    
+    // MARK: - Helpers
+    
+    private func addNewPlayer() {
+        guard canAddPlayer else { return }
+        
+        let newPlayerNumber = playerSlots.count + 1
+        let newPlayer = PlayerSlot(name: "Joueur \(newPlayerNumber)")
+        playerSlots.append(newPlayer)
+    }
+    
+    // MARK: - Sheet 2 builder (conservé pour compatibilité)
     @ViewBuilder
     private func profilesSheet(slotId: UUID?) -> some View {
         if let slotId = slotId {

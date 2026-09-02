@@ -41,8 +41,8 @@ extension Color {
     // MARK: - Palette Principale (Light/Dark adaptatif)
     static let appBackground: Color = Color.assetOrDynamic(
         "AppBackground",
-        light: Color(pbHex: "FFFFFF"),//"F0F4EF"
-        dark: Color(pbHex: "OD1821")//0D1821
+        light: Color(pbHex: "F2F2F7"), // Gris clair iOS (au lieu de blanc)
+        dark: Color(pbHex: "0D1821")
     )
 
     static let appPrimary: Color = Color.assetOrDynamic(
@@ -80,6 +80,28 @@ extension Color {
         light: Color(pbHex: "BFCC94"),
         dark: Color(pbHex: "BFCC94")
     )
+    
+    static let accentBlue: Color = Color.assetOrDynamic(
+        "AccentGreen",
+        light: Color(pbHex: "235789"),
+        dark: Color(pbHex: "235789")
+    )
+    
+    static let accentRed: Color = Color.assetOrDynamic(
+        "AccentGreen",
+        light: Color(pbHex: "ED1C24"),
+        dark: Color(pbHex: "ED1C24")
+    )
+    
+    static let accentYellow: Color = Color.assetOrDynamic(
+        "AccentGreen",
+        light: Color(pbHex: "F1D302"),
+        dark: Color(pbHex: "F1D302")
+    )
+    
+    static let whiteBackground: Color = Color(pbHex: "FDFFFC")
+    
+    static let sectionTitle: Color = Color(pbHex: "020100")
 
     // MARK: - Utilitaires / Sémantiques
     static let cardShadow: Color = Color.black.opacity(0.10)
@@ -191,6 +213,49 @@ enum CornerRadius {
     static let xl: CGFloat = 20
 }
 
+// MARK: - Component Heights
+enum ComponentHeight {
+    static let searchBar: CGFloat = 52
+    static let button: CGFloat = 48
+    static let textField: CGFloat = 44
+}
+
+// MARK: - Icon Sizes
+enum IconSize {
+    static let xs: CGFloat = 12
+    static let sm: CGFloat = 14
+    static let md: CGFloat = 16
+    static let lg: CGFloat = 20
+    static let xl: CGFloat = 24
+    static let xxl: CGFloat = 32
+}
+
+// MARK: - Button Sizes
+enum ButtonSize {
+    static let sm: CGFloat = 32
+    static let md: CGFloat = 40
+    static let lg: CGFloat = 48
+    static let xl: CGFloat = 56
+}
+
+// MARK: - Glass Materials
+enum GlassMaterial {
+    /// Ultra thin material (très transparent)
+    static let ultraThin = Material.ultraThinMaterial
+    
+    /// Thin material (transparent)
+    static let thin = Material.thinMaterial
+    
+    /// Regular material (semi-transparent)
+    static let regular = Material.regularMaterial
+    
+    /// Thick material (peu transparent)
+    static let thick = Material.thickMaterial
+    
+    /// Ultra thick material (presque opaque)
+    static let ultraThick = Material.ultraThickMaterial
+}
+
 // MARK: - Shadow
 struct AppShadow {
     static let card: Shadow = Shadow(
@@ -205,6 +270,13 @@ struct AppShadow {
         radius: 12,
         x: 0,
         y: 6
+    )
+    
+    static let glass: Shadow = Shadow(
+        color: Color.black.opacity(0.1),
+        radius: 8,
+        x: 0,
+        y: 4
     )
 }
 
@@ -251,5 +323,57 @@ extension View {
 
     func modernElevatedCardStyle() -> some View {
         modifier(ElevatedCardModifier())
+    }
+    
+    func gamingButtonStyle() -> some View {
+        buttonStyle(GamingButtonStyle())
+    }
+}
+
+// MARK: - Gaming Button Style (3D effect like GameSelectionCard)
+struct GamingButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(.vertical, Spacing.md)
+            .padding(.horizontal, Spacing.lg)
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.accentGreen.opacity(0.9),
+                        Color.accentGreen
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.6),
+                                .white.opacity(0.05)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 3
+                    )
+            )
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.lg, style: .continuous))
+            .shadow(
+                color: Color.accentGreen.opacity(0.5),
+                radius: configuration.isPressed ? 4 : 12,
+                x: 0,
+                y: configuration.isPressed ? 2 : 8
+            )
+            .shadow(
+                color: Color.black.opacity(0.25),
+                radius: configuration.isPressed ? 2 : 6,
+                x: 0,
+                y: configuration.isPressed ? 1 : 4
+            )
+            .scaleEffect(configuration.isPressed ? 0.96 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }

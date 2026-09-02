@@ -54,6 +54,9 @@ struct SetupView: View {
     @State private var showGameView: Bool = false
     @State private var showGameSelection: Bool = false
     @State private var showRules: Bool = false
+    
+    // Étape actuelle du setup
+    @State private var currentStep: SetupStep = .game
 
     // Snapshot : PresetID figé au moment du tap sur "Voir les règles"
     @State private var rulesPresetID: PresetID? = nil
@@ -80,124 +83,127 @@ struct SetupView: View {
 
     // MARK: - Body
     var body: some View {
-
-        // ✅ Root scrollable: permet à la NavigationStack (dans MainTabView)
-        // de gérer le passage Large -> Inline automatiquement.
-        ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.xl) {
-
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                
                 // -----------------------------------------------------------------
-                // MARK: - Header
+                // MARK: - Header (compact & adaptatif)
                 // -----------------------------------------------------------------
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-
-                        if let profile = profileManager.currentProfile {
-                            Text("Salut \(profile.name), on joue à quoi ?")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundColor(.textSecondary)
-                        }
-
-                        Text("Choisis ou personnalise un jeu et ajoute les joueurs")
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    if let profile = profileManager.currentProfile {
+                        Text("Salut \(profile.name), on joue à quoi ?")
+                            .font(.title3)
+                            .fontWeight(.bold)
                             .foregroundColor(.textSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                     }
-                    .padding(.horizontal, Spacing.lg)
-                    .padding(.bottom, Spacing.md)
 
-                    Button(action: {
-                        headerSelectedProfile = nil
-                        showCreateProfileSheet = true
-                    }) {
-                        HStack(spacing: Spacing.md) {
-                            Image(systemName: "person.crop.circle")
-                                .font(.title2)
-                                .foregroundColor(.appPrimary)
-
-                            if hasAnyProfile {
-                                Text("Changer de profil")
-                                    .font(.cardTitle)
-                                    .foregroundColor(.textPrimary)
-                            } else {
-                                Text("Crée ou choisis un profil")
-                                    .font(.cardTitle)
-                                    .foregroundColor(.textPrimary)
-                            }
-
-                            Spacer()
-
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                        .padding(Spacing.lg)
-                        .frame(maxWidth: .infinity, maxHeight: 60, alignment: .leading)
-                        .background(Color.cardBackground)
-                        .cornerRadius(CornerRadius.lg)
-                        .shadow(
-                            color: AppShadow.card.color,
-                            radius: AppShadow.card.radius,
-                            x: AppShadow.card.x,
-                            y: AppShadow.card.y
-                        )
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, Spacing.lg)
-                }
-
-                // -----------------------------------------------------------------
-                // MARK: - Content
-                // -----------------------------------------------------------------
-                VStack(spacing: Spacing.lg) {
-
-                    GameConfigCard(
-                        selectedPresetID: $selectedPresetID,
-                        selectedMode: $selectedMode,
-                        customInitialValue: $customInitialValue,
-                        customTargetValue: $customTargetValue,
-                        isDescendingMode: $isDescendingMode,
-                        isEliminationMode: $isEliminationMode,
-                        onChangeGame: { showGameSelection = true },
-                        onShowRules: { presetId in
-                            rulesPresetID = presetId
-                            showRules = true
-                        }
-                    )
-
-                    PlayersConfigCard(playerSlots: $playerSlots)
+                    Text("Choisis ou personnalise un jeu")
+                        .font(.footnote)
+                        .foregroundColor(.textSecondary)
+                        .lineLimit(1)
                 }
                 .padding(.horizontal, Spacing.lg)
+                .padding(.vertical, Spacing.sm)
+                
+                // -----------------------------------------------------------------
+                // MARK: - Step Picker (Gaming style) - EN HAUT
+                // -----------------------------------------------------------------
+                SetupStepPicker(selectedStep: $currentStep)
+                    .padding(.top, Spacing.xs)
+                    .padding(.bottom, Spacing.sm)
+                
+                // Bouton profil compact
+                Button(action: {
+                    headerSelectedProfile = nil
+                    showCreateProfileSheet = true
+                }) {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "person.crop.circle")
+                            .font(.body)
+                            .foregroundColor(.appPrimary)
 
-                Spacer(minLength: Spacing.xl)
-            }
-            .padding(.top, Spacing.md)
-        }
-        .background(Color.appBackground)
-        .navigationTitle("Nouvelle partie")
-        .navigationBarTitleDisplayMode(.large)
+                        Text(hasAnyProfile ? "Changer de profil" : "Créer un profil")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.textPrimary)
 
-        // ✅ Le bouton restera AU-DESSUS de la TabBar automatiquement
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: 0) {
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption2)
+                            .foregroundColor(.textSecondary)
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, Spacing.sm)
+                    .background(Color.cardBackground)
+                    .cornerRadius(CornerRadius.md)
+                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Spacing.md)
+
+                // -----------------------------------------------------------------
+                // MARK: - Content (scrollable si besoin)
+                // -----------------------------------------------------------------
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: Spacing.md) {
+                        
+                        // Affichage conditionnel selon l'étape
+                        switch currentStep {
+                        case .summary:
+                            summarySection
+                            
+                        case .players:
+                            PlayersConfigCard(playerSlots: $playerSlots)
+                            
+                            // Grille des joueurs en dessous (3 par ligne)
+                            if !playerSlots.isEmpty {
+                                PlayersGridSection(playerSlots: $playerSlots)
+                            }
+                            
+                        case .game:
+                            GameConfigCard(
+                                selectedPresetID: $selectedPresetID,
+                                selectedMode: $selectedMode,
+                                customInitialValue: $customInitialValue,
+                                customTargetValue: $customTargetValue,
+                                isDescendingMode: $isDescendingMode,
+                                isEliminationMode: $isEliminationMode,
+                                onChangeGame: { showGameSelection = true },
+                                onShowRules: { presetId in
+                                    rulesPresetID = presetId
+                                    showRules = true
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, Spacing.lg)
+                }
+                .frame(maxHeight: .infinity)
+
+                // -----------------------------------------------------------------
+                // MARK: - Bouton (fixe en bas)
+                // -----------------------------------------------------------------
                 Button(action: startGame) {
                     Text("Démarrer la partie")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(
-                            canStartGame
-                            ? Color.accentGreen
-                            : Color.textSecondary.opacity(0.3)
-                        )
-                        .cornerRadius(CornerRadius.lg)
                 }
+                .gamingButtonStyle()
                 .disabled(!canStartGame)
+                .opacity(canStartGame ? 1.0 : 0.5)
                 .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.md)
+                .padding(.bottom, Spacing.sm)
+                .background(Color.appBackground)
             }
-            //.background(.ultraThinMaterial)
         }
+        .background(Color.whiteBackground)
+        .navigationTitle("Nouvelle partie")
+        .navigationBarTitleDisplayMode(.large)
 
         // MARK: - Sheets
         .sheet(isPresented: $showGameSelection) {
@@ -250,6 +256,121 @@ struct SetupView: View {
         }
     }
 
+    // MARK: - Summary Section
+    
+    @ViewBuilder
+    private var summarySection: some View {
+        VStack(spacing: Spacing.md) {
+            // Carte Jeu
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack {
+                    Image(systemName: "gamecontroller.fill")
+                        .foregroundColor(.accentYellow)
+                    Text("Jeu sélectionné")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                }
+                
+                Text(currentPreset.displayName)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(selectedPresetID.themeColor)
+            }
+            .padding(Spacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.cardBackground)
+            .cornerRadius(CornerRadius.lg)
+            .shadow(color: AppShadow.card.color, radius: AppShadow.card.radius)
+            
+            // Carte Joueurs
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack {
+                    Image(systemName: "person.2.fill")
+                        .foregroundColor(.accentGreen)
+                    Text("Joueurs")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                }
+                
+                let activePlayers = playerSlots.filter { !$0.displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                
+                ForEach(activePlayers) { slot in
+                    HStack {
+                        Circle()
+                            .fill(Color.accentGreen)
+                            .frame(width: 8, height: 8)
+                        Text(slot.displayName)
+                            .font(.body)
+                            .foregroundColor(.textPrimary)
+                    }
+                }
+                
+                Text("\(activePlayers.count) joueur\(activePlayers.count > 1 ? "s" : "")")
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+            .padding(Spacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.cardBackground)
+            .cornerRadius(CornerRadius.lg)
+            .shadow(color: AppShadow.card.color, radius: AppShadow.card.radius)
+            
+            // Carte Configuration
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                HStack {
+                    Image(systemName: "slider.horizontal.3")
+                        .foregroundColor(.accentBlue)
+                    Text("Configuration")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                }
+                
+                HStack {
+                    Text("Mode:")
+                        .foregroundColor(.textSecondary)
+                    Spacer()
+                    Text(selectedMode == .points ? "Points" : "Victoires")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.textPrimary)
+                }
+                
+                HStack {
+                    Text("Objectif:")
+                        .foregroundColor(.textSecondary)
+                    Spacer()
+                    Text("\(customInitialValue) → \(customTargetValue)")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.textPrimary)
+                }
+                
+                if isDescendingMode {
+                    HStack {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundColor(.orange)
+                        Text("Score décroissant")
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                if isEliminationMode {
+                    HStack {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                        Text("Mode élimination")
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+            }
+            .padding(Spacing.lg)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.cardBackground)
+            .cornerRadius(CornerRadius.lg)
+            .shadow(color: AppShadow.card.color, radius: AppShadow.card.radius)
+        }
+    }
+    
     // MARK: - Helpers
 
     private func handlePresetSelection(_ presetId: PresetID) {
